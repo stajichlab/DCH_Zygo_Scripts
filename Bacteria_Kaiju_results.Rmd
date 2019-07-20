@@ -160,7 +160,7 @@ heatmap.plot <- ggplot(data = sample.long, mapping = aes(x = Var2, y = Var1, fil
   geom_tile() + xlab(label = "Bacteria") +  ylab("Fungi") +
   labs(fill = "Average Bacterial Contig Score") + theme(axis.text.x = element_text(angle = 90, hjust = 1)) + guides(fill=FALSE) 
 
-heatmap.plot
+#heatmap.plot
 
 #ordering
 Samples.dendro

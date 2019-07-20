@@ -1,0 +1,186 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Cmd+Shift+Enter*. 
+
+```{r setup, include=FALSE, echo=FALSE}
+require("knitr")
+opts_knit$set(root.dir = "/Volumes/GoogleDrive/My Drive/Lab/zygolife (1)/")
+#install.packages(c("ggplot2", "reshape2", "wesanderson", "tidyverse", "readxl", "VennDiagram", "vegan"))
+```
+
+```{r}
+#All Bacteria average contig scores from Kaiju
+library("readxl")
+library("ggplot2")
+
+#Grab and shape data
+Samples <- read_excel("Kaiju Results/kaiju.out2.xls", sheet = "AveScore_contigs_transposed")
+Samples.df <- as.data.frame(Samples)
+
+Samples.df
+
+Totes <- ggplot(Samples.df, aes(x=Samples.df$Bacteria, y=Samples.df$`Grand Total`, fill=Samples.df$Bacteria)) + geom_bar(stat="identity") + guides(fill=FALSE) + theme(axis.text.x = element_text(angle = 90, hjust = 1)) + ylab("Aveage bases matched") + xlab(element_blank())
+Totes
+pdf("AllSample_contigs.pdf", height = 32, width = 12)
+Totes
+dev.off()
+getwd()
+
+
+```
+
+```{r}
+#Average contigs score heatmap and dendro
+library("readxl")
+library("ggplot2")
+library("ggdendro")
+library("reshape2")
+library("grid")
+getwd()
+#Grab and shape data
+Samples <- read_excel("/Volumes/GoogleDrive/My Drive/Lab/zygolife (1)/Kaiju Results/kaiju.out2.xls", 
+    sheet = "AveScore_contigs_nouniq", range = "A79:V130")
+Samples
+Samples.df <- as.data.frame(Samples)
+rownames(Samples.df) <- Samples$...1
+Samples.df
+
+#Cluster
+Samples.df <- Samples.df[,2:22]
+
+Samples.m <- as.matrix(Samples.df)
+Samples.dendro <- as.dendrogram(hclust(d=dist(x=Samples.m)))
+dendro.plot = ggdendrogram(data=Samples.dendro, rotate = TRUE)
+dendro.plot
+
+pdf("AveScore_contigs_all.pdf", height = 32, width = 12)
+dendro.plot
+dev.off()
+
+#Heatmap
+sample.long <- melt(Samples.m)
+sample.long
+heatmap.plot <- ggplot(data = sample.long, mapping = aes(x = Var2, y = Var1, fill = value)) +
+  geom_tile() + xlab(label = "Bacteria") +  ylab("Fungi") +
+  labs(fill = "Average Bacterial Contig Score") + theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
+#ordering
+Samples.dendro
+order <- order.dendrogram(Samples.dendro)
+order
+sample.long$Var1 <- factor(x = sample.long$Var1, levels = Samples$...1[order], ordered = TRUE)
+
+heatmap.plot <- ggplot(data = sample.long, mapping = aes(x = Var2, y = Var1, fill = value)) +
+  geom_tile() + xlab(label = "Bacteria") +  ylab("Fungi") +
+  labs(fill = "Average Bacterial Contig Score") + theme(axis.text.x = element_text(angle = 90, hjust = 1))
+heatmap.plot
+
+pdf("AveScore_contigs_ordered_heat.pdf", height = 12, width = 12)
+heatmap.plot
+dev.off()
+
+
+```
+
+```{r}
+#Presence or Absence of contigs with kaiju greedy score of 200 or greater
+
+#Grab and shape data
+Samples <- read_excel("/Volumes/GoogleDrive/My Drive/Lab/zygolife (1)/Kaiju Results/kaiju.out2.xls", sheet = "Presence_Absence")
+Samples.df <- as.data.frame(Samples)
+rownames(Samples.df) <- Samples$...1
+Samples.df
+
+#Cluster
+Samples.df <- Samples.df[,2:50]
+Samples.m <- as.matrix(Samples.df)
+Samples.dendro <- as.dendrogram(hclust(d=dist(x=Samples.m)))
+dendro.plot = ggdendrogram(data=Samples.dendro, rotate = TRUE)
+dendro.plot
+
+pdf("Presence_Absence.pdf", height = 32, width = 12)
+dendro.plot
+dev.off()
+
+#Heatmap
+sample.long <- melt(Samples.m)
+sample.long
+heatmap.plot <- ggplot(data = sample.long, mapping = aes(x = Var2, y = Var1, fill = value)) +
+  geom_tile() + xlab(label = "Bacteria") +  ylab("Fungi") +
+  labs(fill = "Average Bacterial Contig Score") + theme(axis.text.x = element_text(angle = 90, hjust = 1)) + guides(fill=FALSE) 
+
+heatmap.plot
+
+#ordering
+Samples.dendro
+order <- order.dendrogram(Samples.dendro)
+order
+sample.long$Var1 <- factor(x = sample.long$Var1, levels = Samples$...1[order], ordered = TRUE)
+
+heatmap.plot <- ggplot(data = sample.long, mapping = aes(x = Var2, y = Var1, fill = value)) +
+  geom_tile() + xlab(label = "Bacteria") +  ylab("Fungi") +
+  labs(fill = "Average Bacterial Contig Score") + theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
+
+pdf("Presence_Abs_ordered_heat.pdf", height = 10, width = 12)
+heatmap.plot
+dev.off()
+```
+
+
+```{r}
+#without unique hits (contig is found in 2 or more genomes)
+
+#Grab and shape data
+Samples <- read_excel("/Volumes/GoogleDrive/My Drive/Lab/zygolife (1)/Kaiju Results/kaiju.out2.xls", sheet = "minus_unique")
+Samples.df <- as.data.frame(Samples)
+rownames(Samples.df) <- Samples$...1
+Samples.df
+
+#Cluster
+Samples.df <- Samples.df[,2:50]
+Samples.m <- as.matrix(Samples.df)
+Samples.dendro <- as.dendrogram(hclust(d=dist(x=Samples.m)))
+dendro.plot = ggdendrogram(data=Samples.dendro, rotate = TRUE)
+dendro.plot
+
+pdf("Presence_Absence_dendro.pdf", height = 12, width = 12)
+dendro.plot
+dev.off()
+
+#Heatmap
+sample.long <- melt(Samples.m)
+sample.long
+heatmap.plot <- ggplot(data = sample.long, mapping = aes(x = Var2, y = Var1, fill = value)) +
+  geom_tile() + xlab(label = "Bacteria") +  ylab("Fungi") +
+  labs(fill = "Average Bacterial Contig Score") + theme(axis.text.x = element_text(angle = 90, hjust = 1)) + guides(fill=FALSE) 
+
+heatmap.plot
+
+#ordering
+Samples.dendro
+order <- order.dendrogram(Samples.dendro)
+order
+sample.long$Var1 <- factor(x = sample.long$Var1, levels = Samples$...1[order], ordered = TRUE)
+
+heatmap.plot <- ggplot(data = sample.long, mapping = aes(x = Var2, y = Var1, fill = value)) +
+  geom_tile() + ylab(label = "Bacteria") +  xlab("Fungi") +
+  labs(fill = "Average Bacterial Contig Score") + theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
+
+pdf("Presence_Abs_nouniq_ordered_heat.pdf", height = 6, width = 12)
+heatmap.plot
+dev.off()
+```
+
+Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Cmd+Option+I*.
+
+When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Cmd+Shift+K* to preview the HTML file). 
+
+The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
+

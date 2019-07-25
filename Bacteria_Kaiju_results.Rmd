@@ -178,6 +178,108 @@ heatmap.plot
 dev.off()
 ```
 
+```{r}
+# All zygo genomes without unique hits (contig is found in 2 or more genomes)
+library("readxl")
+library("ggplot2")
+library("ggdendro")
+library("reshape2")
+library("grid")
+
+#Grab and shape data
+Samples <- read_excel("/Volumes/GoogleDrive/My Drive/Lab/zygolife (1)/Kaiju Results/kaiju.out3.xlsx", sheet = "Presence_absence_nouniq")
+Samples.df <- as.data.frame(Samples)
+rownames(Samples.df) <- Samples$...1
+Samples.df
+
+#Cluster
+Samples.df <- Samples.df[,2:311]
+Samples.m <- as.matrix(Samples.df)
+Samples.dendro <- as.dendrogram(hclust(d=dist(x=Samples.m)))
+dendro.plot = ggdendrogram(data=Samples.dendro, rotate = TRUE)
+dendro.plot
+
+pdf("Presence_Absence_dendro.pdf", height = 12, width = 12)
+dendro.plot
+dev.off()
+
+#Heatmap
+sample.long <- melt(Samples.m)
+sample.long
+heatmap.plot <- ggplot(data = sample.long, mapping = aes(x = Var2, y = Var1, fill = value)) +
+  geom_tile() + xlab(label = "Bacteria") +  ylab("Fungi") +
+  labs(fill = "Average Bacterial Contig Score") + theme(axis.text.x = element_text(angle = 90, hjust = 1)) + guides(fill=FALSE) 
+
+#heatmap.plot
+
+#ordering
+Samples.dendro
+order <- order.dendrogram(Samples.dendro)
+order
+sample.long$Var1 <- factor(x = sample.long$Var1, levels = Samples$...1[order], ordered = TRUE)
+
+heatmap.plot <- ggplot(data = sample.long, mapping = aes(x = Var2, y = Var1, fill = value)) +
+  geom_tile() + ylab(label = "Bacteria") +  xlab("Fungi") +
+  labs(fill = "Average Bacterial Contig Score") + theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
+
+pdf("Presence_Abs_nouniq_ordered_heat.pdf", height = 6, width = 12)
+heatmap.plot
+dev.off()
+```
+
+```{r}
+# All zygo genomes without unique hits (zoomed in so that a contig is found in 5 or more genomes)
+
+
+library("readxl")
+library("ggplot2")
+library("ggdendro")
+library("reshape2")
+library("grid")
+
+#Grab and shape data
+Samples <- read_excel("/Volumes/GoogleDrive/My Drive/Lab/zygolife (1)/Kaiju Results/kaiju.out3.xlsx", sheet = "zoom")
+Samples.df <- as.data.frame(Samples)
+rownames(Samples.df) <- Samples$...1
+Samples.df
+
+#Cluster
+Samples.df <- Samples.df[,2:197]
+Samples.m <- as.matrix(Samples.df)
+Samples.dendro <- as.dendrogram(hclust(d=dist(x=Samples.m)))
+dendro.plot = ggdendrogram(data=Samples.dendro, rotate = TRUE)
+dendro.plot
+
+pdf("zoom_Presence_Absence_dendro.pdf", height = 12, width = 12)
+dendro.plot
+dev.off()
+
+#Heatmap
+sample.long <- melt(Samples.m)
+sample.long
+heatmap.plot <- ggplot(data = sample.long, mapping = aes(x = Var2, y = Var1, fill = value)) +
+  geom_tile() + xlab(label = "Bacteria") +  ylab("Fungi") +
+  labs(fill = "Average Bacterial Contig Score") + theme(axis.text.x = element_text(angle = 90, hjust = 1)) + guides(fill=FALSE) 
+
+#heatmap.plot
+
+#ordering
+Samples.dendro
+order <- order.dendrogram(Samples.dendro)
+order
+sample.long$Var1 <- factor(x = sample.long$Var1, levels = Samples$...1[order], ordered = TRUE)
+
+heatmap.plot <- ggplot(data = sample.long, mapping = aes(x = Var2, y = Var1, fill = value)) +
+  geom_tile() + ylab(label = "Bacteria") +  xlab("Fungi") +
+  labs(fill = "Average Bacterial Contig Score") + theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
+
+pdf("zoom_Presence_Abs_nouniq_ordered_heat.pdf", height = 6, width = 12)
+heatmap.plot
+dev.off()
+```
+
 Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Cmd+Option+I*.
 
 When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Cmd+Shift+K* to preview the HTML file). 

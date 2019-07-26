@@ -24,13 +24,36 @@ Samples.df <- as.data.frame(Samples)
 
 Samples.df
 
-Totes <- ggplot(Samples.df, aes(x=Samples.df$Bacteria, y=Samples.df$`Grand Total`, fill=Samples.df$Bacteria)) + geom_bar(stat="identity") + guides(fill=FALSE) + theme(axis.text.x = element_text(angle = 90, hjust = 1)) + ylab("Aveage bases matched") + xlab(element_blank())
+Totes <- ggplot(Samples.df, aes(x=Samples.df$Bacteria, y=Samples.df$`Grand Total`, fill=Samples.df$Bacteria)) + geom_bar(stat="identity") + guides(fill=FALSE) + theme(axis.text.x = element_text(angle = 90, hjust = 1)) + ylab("Aveage bases matched") + xlab(element_blank()) 
+
 Totes
+
 pdf("AllSample_contigs.pdf", height = 32, width = 12)
 Totes
 dev.off()
-getwd()
 
+```
+
+```{r}
+#All Bacteria average contig scores from Kaiju
+library("readxl")
+library("ggplot2")
+library(scales)
+#Grab and shape data
+Samples <- read_excel("Kaiju Results/kaiju_out4.xlsx", sheet = "Contig_count")
+Samples.df <- as.data.frame(Samples)
+
+Samples.df
+Samples.df$Log10
+
+Totes <- ggplot(Samples.df, aes(x = reorder(Samples.df$Order, -Samples.df$Count), y=Samples.df$Count, fill=Samples.df$Order, )) + geom_bar(stat="identity") + guides(fill=FALSE) + theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust=.2)) + ylab("Contig Count (log10)") + xlab(element_blank()) + scale_y_log10(breaks = trans_breaks("log10", function(x) 10^x),
+              labels = trans_format("log10", math_format(10^.x)))
+
+Totes
+
+pdf("contig_counts.pdf", height = 12, width = 12)
+Totes
+dev.off()
 
 ```
 
@@ -239,13 +262,14 @@ library("reshape2")
 library("grid")
 
 #Grab and shape data
-Samples <- read_excel("/Volumes/GoogleDrive/My Drive/Lab/zygolife (1)/Kaiju Results/kaiju.out3.xlsx", sheet = "zoom")
+Samples <- read_excel("/Volumes/GoogleDrive/My Drive/Lab/zygolife (1)/Kaiju Results/kaiju_out4.xlsx", sheet = "Sheet9")
 Samples.df <- as.data.frame(Samples)
 rownames(Samples.df) <- Samples$...1
 Samples.df
 
 #Cluster
-Samples.df <- Samples.df[,2:197]
+#Full bacteria Samples.df <- Samples.df[,2:284]
+Samples.df <- Samples.df[,2:135] #test case without multiple species
 Samples.m <- as.matrix(Samples.df)
 Samples.dendro <- as.dendrogram(hclust(d=dist(x=Samples.m)))
 dendro.plot = ggdendrogram(data=Samples.dendro, rotate = TRUE)
@@ -271,11 +295,12 @@ order
 sample.long$Var1 <- factor(x = sample.long$Var1, levels = Samples$...1[order], ordered = TRUE)
 
 heatmap.plot <- ggplot(data = sample.long, mapping = aes(x = Var2, y = Var1, fill = value)) +
-  geom_tile() + ylab(label = "Bacteria") +  xlab("Fungi") +
-  labs(fill = "Average Bacterial Contig Score") + theme(axis.text.x = element_text(angle = 90, hjust = 1))
+  geom_tile() + ylab("") +  xlab("") +
+  labs(fill = "Average Bacterial Contig Score") + theme(axis.text.x = element_text(angle = 90, hjust = .95, vjust= .2)) + scale_fill_gradient('value', limits=c(0, 1)) + scale_fill_continuous(low="thistle2", high="darkred", guide="colorbar",na.value="white")  + guides(fill=FALSE) 
 
+heatmap.plot
 
-pdf("zoom_Presence_Abs_nouniq_ordered_heat.pdf", height = 6, width = 12)
+pdf("zoom_Presence_Abs_nouniq_ordered_heat.pdf", height = 12, width = 16)
 heatmap.plot
 dev.off()
 ```

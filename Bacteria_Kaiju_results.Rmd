@@ -78,9 +78,9 @@ Totes <- ggplot(Samples.df, aes(y=Samples.df$Genus, x=Samples.df$Fungi, fill = S
 
 Totes
 
-#pdf("AllSample_scores.pdf", height = 50, width = 8)
-#Totes
-#dev.off()
+pdf("AllSample_scores.pdf", height = 14, width = 14)
+Totes
+dev.off()
 
 ```
 

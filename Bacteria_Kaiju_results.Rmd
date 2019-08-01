@@ -17,7 +17,7 @@ knitr::include_graphics("Kaiju\ Results/bubbles4.png")
 
 
 ```{r, echo=FALSE, message=FALSE, include=FALSE}
-#All Bacteria average contig scores from Kaiju
+#All Bacteria average contig scores from Kaiju refseq db
 library("readxl")
 library("ggplot2")
 library("GGally")
@@ -86,6 +86,97 @@ dev.off()
 
 ```{r, fig.width=8, fig.height=15, echo=false}
 Totes
+```
+```{r, echo=FALSE, message=FALSE, include=FALSE}
+#All Bacteria average contig scores from Kaiju old assemblies_nr+euk
+library("readxl")
+library("ggplot2")
+library("GGally")
+library("network")
+library("sna")
+library(tidyverse)
+#Grab and shape data
+Samples <- read_excel("Kaiju Results/kaiju.names.out.xlsx", sheet = "kaiju.names")
+Samples.df <- as.data.frame(Samples)
+
+#Creating node list
+#Fungi <- Samples.df %>%
+ # distinct(Fungi) %>%
+ # rename(label = Fungi)
+
+#Bacteria <- Samples.df %>%
+  #distinct(Genus) %>%
+  #rename(label = Genus)
+
+
+#nodes <- full_join(Fungi, Bacteria, by = "label")
+#nodes
+
+#nodes <- nodes %>% rowid_to_column("id")
+#nodes
+
+#per_route <- Samples.df %>%  
+  #group_by(Fungi, Genus) %>%
+  #summarise(weight = n()) %>% 
+  #ungroup()
+#per_route
+
+#edges <- per_route %>% 
+  #left_join(nodes, by = c("Fungi" = "label")) %>% 
+  #rename(from = id)
+
+#edges <- edges %>% 
+  #left_join(nodes, by = c("Genus" = "label")) %>% 
+  #rename(to = id)
+
+#edges <- select(edges, from, to, weight)
+#edges
+
+#routes_network <- network(edges, vertex.attr = nodes, matrix.type = "edgelist", ignore.eval = FALSE)
+
+#routes_network
+#plot(routes_network, vertex.cex = 3, mode="circle")
+
+#detach(package:sna)
+#detach(package:network)
+#rm(routes_network)
+#library(igraph)
+#routes_igraph <- graph_from_data_frame(d = edges, vertices = nodes, directed = TRUE)
+#fbnetwork <- plot(routes_igraph, edge.arrow.size = .2)
+
+
+Totes <- ggplot(Samples.df, aes(y=Samples.df$Genus, x=Samples.df$Fungi, fill = Samples.df$Fungi, size=Samples.df$`Greedy Score`)) + geom_point(aes(colour = factor(Fungi))) +  theme(axis.text.x = element_text(angle = 90, hjust = 1)) + xlab(element_blank()) + ylab("Kaiju Score")+ggtitle("Kaiju Scores of Bacterial Contigs found in Fungal Genomic DNA")+ theme(legend.position = "none") + coord_flip()
+
+Totes
+
+pdf("nr_euk_Kaiju.pdf", height = 1000, width = 30)
+Totes
+dev.off()
+
+```
+
+
+
+```{r, echo=FALSE, message=FALSE, include=FALSE}
+#All Bacteria average contig scores from Kaiju_new_assemblies nr_euk
+library("readxl")
+library("ggplot2")
+library("GGally")
+library("network")
+library("sna")
+library(tidyverse)
+#Grab and shape data
+Samples <- read_excel("Kaiju Results/new_assemblies_kaiju.names.out.xlsx", sheet = "new_assemblies_kaiju.names")
+Samples.df <- as.data.frame(Samples)
+
+Totes <- ggplot(Samples.df, aes(y=Samples.df$Genus, x=Samples.df$Fungi, fill = Samples.df$Fungi, size=Samples.df$`Greedy Score`)) + geom_point(aes(colour = factor(Fungi))) +  theme(axis.text.x = element_text(angle = 90, hjust = 1)) + xlab(element_blank()) + ylab("Kaiju Score")+ggtitle("Kaiju Scores of Bacterial Contigs found in Fungal Genomic DNA")+ theme(legend.position = "none") 
+
+Totes
+
+pdf("nr_euk_Kaiju_new.pdf", height = 14, width = 14)
+Totes
+dev.off()
+
 ```
 
 ```{r, include=FALSE}

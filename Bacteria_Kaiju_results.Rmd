@@ -1,0 +1,353 @@
+---
+title: "Bacterial Contigs in Fungal genome sequencing projects"
+output: html_notebook
+---
+
+
+#```{r setup, include=FALSE, echo=FALSE, message=FALSE}
+require("knitr")
+opts_knit$set(root.dir = "/Volumes/GoogleDrive/My Drive/Lab/zygolife (1)/")
+#install.packages(c("ggplot2", "reshape2", "wesanderson", "tidyverse", "readxl", "VennDiagram", "vegan", "GGally", "network", "sna", "igraph"))
+```
+
+Zygomycetes have been found to have endo- or ectohyphal associated bacteria. In our community sequencing we found that many of the genomes we thought were pure cultures had bacterial contamination. Utilizing diamond, we extracted all contigs that had a bacterial hit. Then using Kaiju we anaylized the contigs for the closest related spieces found in the RefSeq database. These results were filtered to remove short sequences (<200 nucelotides) and matching contigs with over 5nt difference from the coding sequence in RefSeq were thrownout. 15927 out of 24418 bacteria-marked contigs were classified.
+
+```{r, echo=FALSE, message=FALSE, include=FALSE}
+#All Bacteria average contig scores from Kaiju_new_assemblies nr_euk
+library("readxl")
+library("ggplot2")
+library("GGally")
+library("network")
+library("sna")
+library(tidyverse)
+#Grab and shape data
+getwd()
+Samples <- read_excel("../Kaiju Results/new_assemblies_kaiju.names.out.xlsx", sheet = "new_assemblies_kaiju.names")
+Samples.df <- as.data.frame(Samples)
+
+Totes <- ggplot(Samples.df, aes(y=Samples.df$Genus, x=Samples.df$Fungi, fill = Samples.df$Fungi, size=Samples.df$`Greedy Score`)) + geom_point(aes(colour = factor(Fungi))) +  theme(axis.text.x = element_text(angle = 90, hjust = 1)) + xlab(element_blank()) + ylab("Kaiju Score")+ggtitle("Kaiju Scores of Bacterial Contigs found in Fungal Genomic DNA")+ theme(legend.position = "none") 
+
+Totes
+
+pdf("nr_euk_Kaiju_new_assemblies.pdf", height = 20, width = 20)
+Totes
+dev.off()
+
+```
+
+```{r, include=FALSE}
+#All Bacteria average contig scores from Kaiju
+library("readxl")
+library("ggplot2")
+library(scales)
+
+#Orders 
+
+#Grab and shape data
+Samples <- read_excel("Kaiju Results/kaiju_out4.xlsx", sheet = "Contig_count_order")
+Samples.df <- as.data.frame(Samples)
+
+ccorder <- ggplot(Samples.df, aes(x = reorder(Samples.df$Order, -Samples.df$Count), y=Samples.df$Count, fill=Samples.df$Order)) + geom_bar(stat="identity") + guides(fill=FALSE) + theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust=.2)) + ylab("Contig Count (log10)") + xlab(element_blank()) + scale_y_log10(breaks = trans_breaks("log10", function(x) 10^x),
+              labels = trans_format("log10", math_format(10^.x))) + annotation_logticks(sides="l") 
+
+pdf("contig_counts_order.pdf", height = 12, width = 12)
+ccorder
+dev.off()
+```
+
+```{r, fig.width=3, fig.height=2, echo=false}
+ccorder
+```
+
+```{r, include=FALSE}
+
+#Genus 
+
+#Grab and shape data
+Samples <- read_excel("Kaiju Results/kaiju_out4.xlsx", sheet = "Contig_count_Genus")
+Samples.df <- as.data.frame(Samples)
+
+gen <- ggplot(Samples.df, aes(x = reorder(Samples.df$Genus, -Samples.df$Count), y=Samples.df$Count, fill=Samples.df$Genus)) + geom_bar(stat="identity") + guides(fill=FALSE) + theme(axis.text.x = element_text(hjust = .9, vjust=.2)) + ylab("Contig Count (log10)") + xlab(element_blank()) + scale_y_log10(breaks = trans_breaks("log10", function(x) 10^x),
+              labels = trans_format("log10", math_format(10^.x)))+ coord_flip()
+
+pdf("contig_counts_genus.pdf", height = 12, width = 12)
+gen
+dev.off()
+```
+
+```{r, fig.width=4, fig.height=3, echo=false}
+gen
+```
+
+```{r, include=FALSE}
+# All zygo genomes without unique hits
+
+library("readxl")
+library("ggplot2")
+library("ggdendro")
+library("reshape2")
+library("grid")
+
+#Grab and shape data
+Samples <- read_excel("/Volumes/GoogleDrive/My Drive/Lab/zygolife (1)/Kaiju Results/kaiju_out4.xlsx", sheet = "Pres_abs")
+Samples.df <- as.data.frame(Samples)
+rownames(Samples.df) <- Samples$...1
+Samples.df
+
+#Cluster
+Samples.df <- Samples.df[,2:577] #Full set of bacteria
+#Samples.df <- Samples.df[,2:135] #test case without multiple species
+Samples.m <- as.matrix(Samples.df)
+Samples.dendro <- as.dendrogram(hclust(d=dist(x=Samples.m)))
+dendro.plot = ggdendrogram(data=Samples.dendro, rotate = TRUE)
+dendro.plot
+
+pdf("Presence_Absence_dendro.pdf", height = 12, width = 12)
+dendro.plot
+dev.off()
+
+#Heatmap
+sample.long <- melt(Samples.m)
+sample.long
+heatmap.plot <- ggplot(data = sample.long, mapping = aes(x = Var2, y = Var1, fill = value)) +
+  geom_tile() + xlab(label = "Bacteria") +  ylab("Fungi") +
+  labs(fill = "Average Bacterial Contig Score") + theme(axis.text.x = element_text(angle = 90, hjust = 1)) + guides(fill=FALSE) 
+
+#heatmap.plot
+
+#ordering
+Samples.dendro
+order <- order.dendrogram(Samples.dendro)
+order
+sample.long$Var1 <- factor(x = sample.long$Var1, levels = Samples$...1[order], ordered = TRUE)
+
+heatmap.plot <- ggplot(data = sample.long, mapping = aes(x = Var2, y = Var1, fill = value)) +
+  geom_tile() + ylab("") +  xlab("") +
+  labs(fill = "Average Bacterial Contig Score") + theme(axis.text.x = element_text(angle = 90, hjust = .95, vjust= .2)) + scale_fill_gradient('value', limits=c(0, 1)) + scale_fill_continuous(low="thistle2", high="darkred", guide="colorbar",na.value="white")  + guides(fill=FALSE) 
+
+heatmap.plot
+
+pdf("Presence_Abs_nouniq_ordered_heat.pdf", height = 12, width = 16)
+heatmap.plot
+dev.off()
+```
+
+```{r, fig.width=4, fig.height=4, echo=false}
+dendro.plot
+```
+
+```{r, fig.width=4, fig.height=12, echo=false}
+heatmap.plot + coord_flip()
+```
+
+#```{r pressure, echo=FALSE, fig.cap="A caption", out.width = '100%'}
+knitr::include_graphics("Kaiju\ Results/bubbles4.png")
+```
+
+
+#```{r, echo=FALSE, message=FALSE, include=FALSE}
+#All Bacteria average contig scores from Kaiju refseq db
+library("readxl")
+library("ggplot2")
+library("GGally")
+library("network")
+library("sna")
+library(tidyverse)
+#Grab and shape data
+Samples <- read_excel("Kaiju Results/kaiju_out4.xlsx", sheet = "Selection-genus")
+Samples.df <- as.data.frame(Samples)
+
+#Creating node list
+Fungi <- Samples.df %>%
+  distinct(Fungi) %>%
+  rename(label = Fungi)
+
+Bacteria <- Samples.df %>%
+  distinct(Genus) %>%
+  rename(label = Genus)
+
+
+nodes <- full_join(Fungi, Bacteria, by = "label")
+nodes
+
+nodes <- nodes %>% rowid_to_column("id")
+nodes
+
+per_route <- Samples.df %>%  
+  group_by(Fungi, Genus) %>%
+  summarise(weight = n()) %>% 
+  ungroup()
+per_route
+
+edges <- per_route %>% 
+  left_join(nodes, by = c("Fungi" = "label")) %>% 
+  rename(from = id)
+
+edges <- edges %>% 
+  left_join(nodes, by = c("Genus" = "label")) %>% 
+  rename(to = id)
+
+edges <- select(edges, from, to, weight)
+edges
+
+routes_network <- network(edges, vertex.attr = nodes, matrix.type = "edgelist", ignore.eval = FALSE)
+
+routes_network
+plot(routes_network, vertex.cex = 3, mode="circle")
+
+detach(package:sna)
+detach(package:network)
+rm(routes_network)
+library(igraph)
+routes_igraph <- graph_from_data_frame(d = edges, vertices = nodes, directed = TRUE)
+fbnetwork <- plot(routes_igraph, edge.arrow.size = .2)
+
+
+Totes <- ggplot(Samples.df, aes(y=Samples.df$Genus, x=Samples.df$Fungi, fill = Samples.df$Fungi, size=Samples.df$`Greedy Score`)) + geom_point(aes(colour = factor(Fungi))) +  theme(axis.text.x = element_text(angle = 90, hjust = 1)) + xlab(element_blank()) + ylab("Kaiju Score")+ggtitle("Kaiju Scores of Bacterial Contigs found in Fungal Genomic DNA")+ theme(legend.position = "none") 
+
+Totes
+
+pdf("AllSample_scores.pdf", height = 14, width = 14)
+Totes
+dev.off()
+
+```
+
+#```{r, fig.width=8, fig.height=15, echo=false}
+Totes
+```
+#```{r, echo=FALSE, message=FALSE, include=FALSE}
+#All Bacteria average contig scores from Kaiju old assemblies_nr+euk
+library("readxl")
+library("ggplot2")
+library("GGally")
+library("network")
+library("sna")
+library(tidyverse)
+#Grab and shape data
+Samples <- read_excel("Kaiju Results/kaiju.names.out.xlsx", sheet = "kaiju.names")
+Samples.df <- as.data.frame(Samples)
+
+#Creating node list
+#Fungi <- Samples.df %>%
+ # distinct(Fungi) %>%
+ # rename(label = Fungi)
+
+#Bacteria <- Samples.df %>%
+  #distinct(Genus) %>%
+  #rename(label = Genus)
+
+
+#nodes <- full_join(Fungi, Bacteria, by = "label")
+#nodes
+
+#nodes <- nodes %>% rowid_to_column("id")
+#nodes
+
+#per_route <- Samples.df %>%  
+  #group_by(Fungi, Genus) %>%
+  #summarise(weight = n()) %>% 
+  #ungroup()
+#per_route
+
+#edges <- per_route %>% 
+  #left_join(nodes, by = c("Fungi" = "label")) %>% 
+  #rename(from = id)
+
+#edges <- edges %>% 
+  #left_join(nodes, by = c("Genus" = "label")) %>% 
+  #rename(to = id)
+
+#edges <- select(edges, from, to, weight)
+#edges
+
+#routes_network <- network(edges, vertex.attr = nodes, matrix.type = "edgelist", ignore.eval = FALSE)
+
+#routes_network
+#plot(routes_network, vertex.cex = 3, mode="circle")
+
+#detach(package:sna)
+#detach(package:network)
+#rm(routes_network)
+#library(igraph)
+#routes_igraph <- graph_from_data_frame(d = edges, vertices = nodes, directed = TRUE)
+#fbnetwork <- plot(routes_igraph, edge.arrow.size = .2)
+
+
+Totes <- ggplot(Samples.df, aes(y=Samples.df$Genus, x=Samples.df$Fungi, fill = Samples.df$Fungi, size=Samples.df$`Greedy Score`)) + geom_point(aes(colour = factor(Fungi))) +  theme(axis.text.x = element_text(angle = 90, hjust = 1)) + xlab(element_blank()) + ylab("Kaiju Score")+ggtitle("Kaiju Scores of Bacterial Contigs found in Fungal Genomic DNA")+ theme(legend.position = "none") + coord_flip()
+
+Totes
+
+pdf("nr_euk_Kaiju.pdf", height = 1000, width = 30)
+Totes
+dev.off()
+
+```
+
+
+
+
+#```{r, include=FALSE}
+# All zygo genomes with only best hit of bacteria genus
+
+library("readxl")
+library("ggplot2")
+library("ggdendro")
+library("reshape2")
+library("grid")
+
+#Grab and shape data
+Samples <- read_excel("/Volumes/GoogleDrive/My Drive/Lab/zygolife (1)/Kaiju Results/kaiju_out4.xlsx", sheet = "genus-pres_abs")
+Samples.df <- as.data.frame(Samples)
+rownames(Samples.df) <- Samples$...1
+Samples.df
+
+#Cluster
+Samples.df <- Samples.df[,2:214] #Full set of bacteria
+#Samples.df <- Samples.df[,2:135] #test case without multiple species
+Samples.m <- as.matrix(Samples.df)
+Samples.dendro <- as.dendrogram(hclust(d=dist(x=Samples.m)))
+dendro.plot = ggdendrogram(data=Samples.dendro, rotate = TRUE)
+dendro.plot
+
+pdf("zoom_Presence_Absence_dendro.pdf", height = 12, width = 12)
+dendro.plot
+dev.off()
+
+#Heatmap
+sample.long <- melt(Samples.m)
+sample.long
+heatmap.plot <- ggplot(data = sample.long, mapping = aes(x = Var2, y = Var1, fill = value)) +
+  geom_tile() + xlab(label = "Bacteria") +  ylab("Fungi") +
+  labs(fill = "Average Bacterial Contig Score") + theme(axis.text.x = element_text(angle = 90, hjust = 1)) + guides(fill=FALSE) 
+
+#heatmap.plot
+
+#ordering
+Samples.dendro
+order <- order.dendrogram(Samples.dendro)
+order
+sample.long$Var1 <- factor(x = sample.long$Var1, levels = Samples$...1[order], ordered = TRUE)
+
+heatmap.plot <- ggplot(data = sample.long, mapping = aes(x = Var2, y = Var1, fill = value)) +
+  geom_tile() + ylab("") +  xlab("") +
+  labs(fill = "Average Bacterial Contig Score") + theme(axis.text.x = element_text(angle = 90, hjust = .95, vjust= .2)) + scale_fill_gradient('value', limits=c(0, 1)) + scale_fill_continuous(low="thistle2", high="darkred", guide="colorbar",na.value="white")  + guides(fill=FALSE) 
+
+heatmap.plot
+
+pdf("zoom_Presence_Abs_nouniq_ordered_heat.pdf", height = 12, width = 16)
+heatmap.plot
+dev.off()
+```
+
+#```{r, fig.width=8, fig.height=12, echo=false}
+dendro.plot
+```
+
+#```{r, fig.width=8, fig.height=12, echo=false}
+heatmap.plot + coord_flip()
+```
+
+
+
+

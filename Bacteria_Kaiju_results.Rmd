@@ -3,12 +3,17 @@ title: "Bacterial Contigs in Fungal genome sequencing projects"
 output: html_notebook
 ---
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> f8ceb9c9b282fa2eaaf32ae8b083b138ed74ea4d
 ```{r setup, include=FALSE, echo=FALSE, message=FALSE}
 require("knitr")
 opts_knit$set(root.dir = "/Volumes/GoogleDrive/My Drive/Lab/zygolife (1)/")
 #install.packages(c("ggplot2", "reshape2", "wesanderson", "tidyverse", "readxl", "VennDiagram", "vegan", "GGally", "network", "sna", "igraph"))
 ```
 
+<<<<<<< HEAD
 ```{r colors}
 #Divergent:
 colors_10=c("#032047","#072C5F","#113A73","#1D4B8B","#385F95","#E3A948","#D48F1C","#AF710B","#915A00","#6B4300")
@@ -18,6 +23,486 @@ colors_5gold=c("#6B4300","#915A00","#AF710B","#D48F1C","#E3A948")
 colors_6div=c("#032047","#113A73","#385F95","#E3A948","#AF710B","#6B4300")
 colors_3blue=c("#385F95","#113A73","#032047")
 colors_3gold=c("#E3A948", "#AF710B", "#6B4300")
+=======
+Zygomycetes have been found to have endo- or ectohyphal associated bacteria. In our community sequencing we found that many of the genomes we thought were pure cultures had bacterial contamination. Utilizing diamond, we extracted all contigs that had a bacterial hit. Then using Kaiju we anaylized the contigs for the closest related spieces found in the RefSeq database. These results were filtered to remove short sequences (<200 nucelotides) and matching contigs with over 5nt difference from the coding sequence in RefSeq were thrownout. 15927 out of 24418 bacteria-marked contigs were classified.
+```{r pressure, echo=FALSE, fig.cap="A caption", out.width = '100%'}
+knitr::include_graphics("Kaiju\ Results/bubbles4.png")
+```
+
+
+```{r, echo=FALSE, message=FALSE, include=FALSE}
+#All Bacteria average contig scores from Kaiju refseq db
+library("readxl")
+library("ggplot2")
+library("GGally")
+library("network")
+library("sna")
+library(tidyverse)
+#Grab and shape data
+Samples <- read_excel("Kaiju Results/kaiju_out4.xlsx", sheet = "Selection-genus")
+Samples.df <- as.data.frame(Samples)
+
+#Creating node list
+Fungi <- Samples.df %>%
+  distinct(Fungi) %>%
+  rename(label = Fungi)
+
+Bacteria <- Samples.df %>%
+  distinct(Genus) %>%
+  rename(label = Genus)
+
+
+nodes <- full_join(Fungi, Bacteria, by = "label")
+nodes
+
+nodes <- nodes %>% rowid_to_column("id")
+nodes
+
+per_route <- Samples.df %>%  
+  group_by(Fungi, Genus) %>%
+  summarise(weight = n()) %>% 
+  ungroup()
+per_route
+
+edges <- per_route %>% 
+  left_join(nodes, by = c("Fungi" = "label")) %>% 
+  rename(from = id)
+
+edges <- edges %>% 
+  left_join(nodes, by = c("Genus" = "label")) %>% 
+  rename(to = id)
+
+edges <- select(edges, from, to, weight)
+edges
+
+routes_network <- network(edges, vertex.attr = nodes, matrix.type = "edgelist", ignore.eval = FALSE)
+
+routes_network
+plot(routes_network, vertex.cex = 3, mode="circle")
+
+detach(package:sna)
+detach(package:network)
+rm(routes_network)
+library(igraph)
+routes_igraph <- graph_from_data_frame(d = edges, vertices = nodes, directed = TRUE)
+fbnetwork <- plot(routes_igraph, edge.arrow.size = .2)
+
+
+Totes <- ggplot(Samples.df, aes(y=Samples.df$Genus, x=Samples.df$Fungi, fill = Samples.df$Fungi, size=Samples.df$`Greedy Score`)) + geom_point(aes(colour = factor(Fungi))) +  theme(axis.text.x = element_text(angle = 90, hjust = 1)) + xlab(element_blank()) + ylab("Kaiju Score")+ggtitle("Kaiju Scores of Bacterial Contigs found in Fungal Genomic DNA")+ theme(legend.position = "none") 
+
+Totes
+
+pdf("AllSample_scores.pdf", height = 14, width = 14)
+Totes
+dev.off()
+
+```
+
+```{r, fig.width=8, fig.height=15, echo=false}
+Totes
+```
+```{r, echo=FALSE, message=FALSE, include=FALSE}
+#All Bacteria average contig scores from Kaiju old assemblies_nr+euk
+library("readxl")
+library("ggplot2")
+library("GGally")
+library("network")
+library("sna")
+library(tidyverse)
+#Grab and shape data
+Samples <- read_excel("Kaiju Results/kaiju.names.out.xlsx", sheet = "kaiju.names")
+Samples.df <- as.data.frame(Samples)
+
+#Creating node list
+#Fungi <- Samples.df %>%
+ # distinct(Fungi) %>%
+ # rename(label = Fungi)
+
+#Bacteria <- Samples.df %>%
+  #distinct(Genus) %>%
+  #rename(label = Genus)
+
+
+#nodes <- full_join(Fungi, Bacteria, by = "label")
+#nodes
+
+#nodes <- nodes %>% rowid_to_column("id")
+#nodes
+
+#per_route <- Samples.df %>%  
+  #group_by(Fungi, Genus) %>%
+  #summarise(weight = n()) %>% 
+  #ungroup()
+#per_route
+
+#edges <- per_route %>% 
+  #left_join(nodes, by = c("Fungi" = "label")) %>% 
+  #rename(from = id)
+
+#edges <- edges %>% 
+  #left_join(nodes, by = c("Genus" = "label")) %>% 
+  #rename(to = id)
+
+#edges <- select(edges, from, to, weight)
+#edges
+
+#routes_network <- network(edges, vertex.attr = nodes, matrix.type = "edgelist", ignore.eval = FALSE)
+
+#routes_network
+#plot(routes_network, vertex.cex = 3, mode="circle")
+
+#detach(package:sna)
+#detach(package:network)
+#rm(routes_network)
+#library(igraph)
+#routes_igraph <- graph_from_data_frame(d = edges, vertices = nodes, directed = TRUE)
+#fbnetwork <- plot(routes_igraph, edge.arrow.size = .2)
+
+
+Totes <- ggplot(Samples.df, aes(y=Samples.df$Genus, x=Samples.df$Fungi, fill = Samples.df$Fungi, size=Samples.df$`Greedy Score`)) + geom_point(aes(colour = factor(Fungi))) +  theme(axis.text.x = element_text(angle = 90, hjust = 1)) + xlab(element_blank()) + ylab("Kaiju Score")+ggtitle("Kaiju Scores of Bacterial Contigs found in Fungal Genomic DNA")+ theme(legend.position = "none") + coord_flip()
+
+Totes
+
+pdf("nr_euk_Kaiju.pdf", height = 1000, width = 30)
+Totes
+dev.off()
+
+```
+
+
+
+```{r, echo=FALSE, message=FALSE, include=FALSE}
+#All Bacteria average contig scores from Kaiju_new_assemblies nr_euk
+library("readxl")
+library("ggplot2")
+library("GGally")
+library("network")
+library("sna")
+library(tidyverse)
+#Grab and shape data
+getwd()
+Samples <- read_excel("./Kaiju Results/new_assemblies_kaiju.names.out.xlsx", sheet = "new_assemblies_kaiju.names")
+Samples.df <- as.data.frame(Samples)
+
+Totes <- ggplot(Samples.df, aes(y=Samples.df$Genus, x=Samples.df$Fungi, fill = Samples.df$Fungi, size=Samples.df$`Greedy Score`)) + geom_point(aes(colour = factor(Fungi))) +  theme(text = element_text(size=20), axis.text.x = element_text(angle = 90, hjust = 1, vjust=.1)) + xlab(element_blank()) + ylab("Kaiju Score")+ggtitle("Kaiju Scores of Bacterial Contigs found in Fungal Genomic DNA")+ theme(legend.position = "none") 
+
+Totes
+
+png("nr_euk_Kaiju_new_assemblies.png", 2400, 2400)
+Totes
+dev.off()
+
+```
+
+```{r, include=FALSE}
+#All Bacteria average contig scores from Kaiju
+library("readxl")
+library("ggplot2")
+library(scales)
+
+#Orders 
+
+#Grab and shape data
+Samples <- read_excel("Kaiju Results/kaiju_out4.xlsx", sheet = "Contig_count_order")
+Samples.df <- as.data.frame(Samples)
+
+ccorder <- ggplot(Samples.df, aes(x = reorder(Samples.df$Order, -Samples.df$Count), y=Samples.df$Count, fill=Samples.df$Order)) + geom_bar(stat="identity") + guides(fill=FALSE) + theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust=.2)) + ylab("Contig Count (log10)") + xlab(element_blank()) + scale_y_log10(breaks = trans_breaks("log10", function(x) 10^x),
+              labels = trans_format("log10", math_format(10^.x))) + annotation_logticks(sides="l") 
+
+pdf("contig_counts_order.pdf", height = 12, width = 12)
+ccorder
+dev.off()
+```
+
+```{r, fig.width=3, fig.height=2, echo=false}
+ccorder
+```
+
+```{r, include=FALSE}
+
+#Genus 
+
+#Grab and shape data
+Samples <- read_excel("Kaiju Results/kaiju_out4.xlsx", sheet = "Contig_count_Genus")
+Samples.df <- as.data.frame(Samples)
+
+gen <- ggplot(Samples.df, aes(x = reorder(Samples.df$Genus, -Samples.df$Count), y=Samples.df$Count, fill=Samples.df$Genus)) + geom_bar(stat="identity") + guides(fill=FALSE) + theme(axis.text.x = element_text(hjust = .9, vjust=.2)) + ylab("Contig Count (log10)") + xlab(element_blank()) + scale_y_log10(breaks = trans_breaks("log10", function(x) 10^x),
+              labels = trans_format("log10", math_format(10^.x)))+ coord_flip()
+
+pdf("contig_counts_genus.pdf", height = 12, width = 12)
+gen
+dev.off()
+```
+
+```{r, fig.width=4, fig.height=3, echo=false}
+gen
+```
+
+```{r, include=FALSE}
+# All zygo genomes without unique hits
+
+library("readxl")
+library("ggplot2")
+library("ggdendro")
+library("reshape2")
+library("grid")
+
+#Grab and shape data
+Samples <- read_excel("/Volumes/GoogleDrive/My Drive/Lab/zygolife (1)/Kaiju Results/kaiju_out4.xlsx", sheet = "Pres_abs")
+Samples.df <- as.data.frame(Samples)
+rownames(Samples.df) <- Samples$...1
+Samples.df
+
+#Cluster
+Samples.df <- Samples.df[,2:577] #Full set of bacteria
+#Samples.df <- Samples.df[,2:135] #test case without multiple species
+Samples.m <- as.matrix(Samples.df)
+Samples.dendro <- as.dendrogram(hclust(d=dist(x=Samples.m)))
+dendro.plot = ggdendrogram(data=Samples.dendro, rotate = TRUE)
+dendro.plot
+
+pdf("Presence_Absence_dendro.pdf", height = 12, width = 12)
+dendro.plot
+dev.off()
+
+#Heatmap
+sample.long <- melt(Samples.m)
+sample.long
+heatmap.plot <- ggplot(data = sample.long, mapping = aes(x = Var2, y = Var1, fill = value)) +
+  geom_tile() + xlab(label = "Bacteria") +  ylab("Fungi") +
+  labs(fill = "Average Bacterial Contig Score") + theme(axis.text.x = element_text(angle = 90, hjust = 1)) + guides(fill=FALSE) 
+
+#heatmap.plot
+
+#ordering
+Samples.dendro
+order <- order.dendrogram(Samples.dendro)
+order
+sample.long$Var1 <- factor(x = sample.long$Var1, levels = Samples$...1[order], ordered = TRUE)
+
+heatmap.plot <- ggplot(data = sample.long, mapping = aes(x = Var2, y = Var1, fill = value)) +
+  geom_tile() + ylab("") +  xlab("") +
+  labs(fill = "Average Bacterial Contig Score") + theme(axis.text.x = element_text(angle = 90, hjust = .95, vjust= .2)) + scale_fill_gradient('value', limits=c(0, 1)) + scale_fill_continuous(low="thistle2", high="darkred", guide="colorbar",na.value="white")  + guides(fill=FALSE) 
+
+heatmap.plot
+
+pdf("Presence_Abs_nouniq_ordered_heat.pdf", height = 12, width = 16)
+heatmap.plot
+dev.off()
+```
+
+```{r, fig.width=4, fig.height=4, echo=false}
+dendro.plot
+```
+
+```{r, fig.width=4, fig.height=12, echo=false}
+heatmap.plot + coord_flip()
+```
+
+```{r, include=FALSE}
+# All zygo genomes with only best hit of bacteria genus
+
+library("readxl")
+library("ggplot2")
+library("ggdendro")
+library("reshape2")
+library("grid")
+
+#Grab and shape data
+Samples <- read_excel("/Volumes/GoogleDrive/My Drive/Lab/zygolife (1)/Kaiju Results/kaiju_out4.xlsx", sheet = "genus-pres_abs")
+Samples.df <- as.data.frame(Samples)
+rownames(Samples.df) <- Samples$...1
+Samples.df
+
+#Cluster
+Samples.df <- Samples.df[,2:214] #Full set of bacteria
+#Samples.df <- Samples.df[,2:135] #test case without multiple species
+Samples.m <- as.matrix(Samples.df)
+Samples.dendro <- as.dendrogram(hclust(d=dist(x=Samples.m)))
+dendro.plot = ggdendrogram(data=Samples.dendro, rotate = TRUE)
+dendro.plot
+
+pdf("zoom_Presence_Absence_dendro.pdf", height = 12, width = 12)
+dendro.plot
+dev.off()
+
+#Heatmap
+sample.long <- melt(Samples.m)
+sample.long
+heatmap.plot <- ggplot(data = sample.long, mapping = aes(x = Var2, y = Var1, fill = value)) +
+  geom_tile() + xlab(label = "Bacteria") +  ylab("Fungi") +
+  labs(fill = "Average Bacterial Contig Score") + theme(axis.text.x = element_text(angle = 90, hjust = 1)) + guides(fill=FALSE) 
+
+#heatmap.plot
+
+#ordering
+Samples.dendro
+order <- order.dendrogram(Samples.dendro)
+order
+sample.long$Var1 <- factor(x = sample.long$Var1, levels = Samples$...1[order], ordered = TRUE)
+
+heatmap.plot <- ggplot(data = sample.long, mapping = aes(x = Var2, y = Var1, fill = value)) +
+  geom_tile() + ylab("") +  xlab("") +
+  labs(fill = "Average Bacterial Contig Score") + theme(axis.text.x = element_text(angle = 90, hjust = .95, vjust= .2)) + scale_fill_gradient('value', limits=c(0, 1)) + scale_fill_continuous(low="thistle2", high="darkred", guide="colorbar",na.value="white")  + guides(fill=FALSE) 
+
+heatmap.plot
+
+pdf("zoom_Presence_Abs_nouniq_ordered_heat.pdf", height = 12, width = 16)
+heatmap.plot
+dev.off()
+```
+
+```{r, fig.width=8, fig.height=12, echo=false}
+dendro.plot
+```
+
+```{r, fig.width=8, fig.height=12, echo=false}
+heatmap.plot + coord_flip()
+```
+
+
+
+```{r revigoplot, echo=FALSE}
+# A plotting R script produced by the REVIGO server at http://revigo.irb.hr/
+# If you found REVIGO useful in your work, please cite the following reference:
+# Supek F et al. "REVIGO summarizes and visualizes long lists of Gene Ontology
+# terms" PLoS ONE 2011. doi:10.1371/journal.pone.0021800
+
+
+# --------------------------------------------------------------------------
+# If you don't have the ggplot2 package installed, uncomment the following line:
+# install.packages( "ggplot2" );
+library( ggplot2 );
+# --------------------------------------------------------------------------
+# If you don't have the scales package installed, uncomment the following line:
+# install.packages( "scales" );
+library( scales );
+
+
+# --------------------------------------------------------------------------
+# Here is your data from REVIGO. Scroll down for plot configuration options.
+
+revigo.names <- c("term_ID","description","frequency_%","plot_X","plot_Y","plot_size","uniqueness","dispensability");
+revigo.data <- rbind(c("GO:0006811","ion transport", 5.344,-3.944, 4.914, 5.836,0.848,0.000),
+c("GO:0046677","response to antibiotic", 0.128,-4.791,-2.489, 4.215,0.760,0.000),
+c("GO:0051289","protein homotetramerization", 0.015, 0.860, 5.758, 3.297,0.726,0.000),
+c("GO:0019746","hopanoid biosynthetic process", 0.004,-0.218,-5.821, 2.758,0.719,0.017),
+c("GO:0018298","protein-chromophore linkage", 0.095, 5.533, 5.122, 4.084,0.713,0.035),
+c("GO:0006108","malate metabolic process", 0.088, 4.077,-5.938, 4.051,0.709,0.110),
+c("GO:0006261","DNA-dependent DNA replication", 0.576, 6.961,-0.060, 4.869,0.629,0.116),
+c("GO:0030420","establishment of competence for transformation", 0.021,-5.037,-0.719, 3.438,0.666,0.244),
+c("GO:0006355","regulation of transcription, DNA-templated", 9.917, 5.326,-0.003, 6.105,0.543,0.356),
+c("GO:0006096","glycolytic process", 0.545, 4.724,-3.186, 4.844,0.619,0.361),
+c("GO:0006415","translational termination", 0.201, 3.786, 2.090, 4.411,0.533,0.573));
+
+one.data <- data.frame(revigo.data);
+names(one.data) <- revigo.names;
+one.data <- one.data [(one.data$plot_X != "null" & one.data$plot_Y != "null"), ];
+one.data$plot_X <- as.numeric( as.character(one.data$plot_X) );
+one.data$plot_Y <- as.numeric( as.character(one.data$plot_Y) );
+one.data$plot_size <- as.numeric( as.character(one.data$plot_size) );
+one.data$log10_p_value <- as.numeric( as.character(one.data$log10_p_value) );
+one.data$frequency <- as.numeric( as.character(one.data$frequency) );
+one.data$uniqueness <- as.numeric( as.character(one.data$uniqueness) );
+one.data$dispensability <- as.numeric( as.character(one.data$dispensability) );
+#head(one.data);
+
+
+# --------------------------------------------------------------------------
+# Names of the axes, sizes of the numbers and letters, names of the columns,
+# etc. can be changed below
+
+p1 <- ggplot( data = one.data );
+p1 <- p1 + geom_point( aes( plot_X, plot_Y, colour = log10_p_value, size = plot_size), alpha = I(0.6) ) + scale_size_area();
+p1 <- p1 + scale_colour_gradientn( colours = c("blue", "green", "yellow", "red"), limits = c( min(one.data$log10_p_value), 0) );
+p1 <- p1 + geom_point( aes(plot_X, plot_Y, size = plot_size), shape = 21, fill = "transparent", colour = I (alpha ("black", 0.6) )) + scale_size_area();
+p1 <- p1 + scale_size( range=c(5, 30)) + theme_bw(); # + scale_fill_gradientn(colours = heat_hcl(7), limits = c(-300, 0) );
+ex <- one.data [ one.data$dispensability < 0.15, ]; 
+p1 <- p1 + geom_text( data = ex, aes(plot_X, plot_Y, label = description), colour = I(alpha("black", 0.85)), size = 3 );
+p1 <- p1 + labs (y = "semantic space x", x = "semantic space y");
+p1 <- p1 + theme(legend.key = element_blank()) ;
+one.x_range = max(one.data$plot_X) - min(one.data$plot_X);
+one.y_range = max(one.data$plot_Y) - min(one.data$plot_Y);
+p1 <- p1 + xlim(min(one.data$plot_X)-one.x_range/10,max(one.data$plot_X)+one.x_range/10);
+p1 <- p1 + ylim(min(one.data$plot_Y)-one.y_range/10,max(one.data$plot_Y)+one.y_range/10);
+
+
+
+# --------------------------------------------------------------------------
+# Output the plot to screen
+
+p1;
+
+# Uncomment the line below to also save the plot to a file.
+# The file type depends on the extension (default=pdf).
+
+# ggsave("C:/Users/path_to_your_file/revigo-plot.pdf");
+```
+
+```{r revigotree, echo=FALSE}
+
+
+# A treemap R script produced by the REVIGO server at http://revigo.irb.hr/
+# If you found REVIGO useful in your work, please cite the following reference:
+# Supek F et al. "REVIGO summarizes and visualizes long lists of Gene Ontology
+# terms" PLoS ONE 2011. doi:10.1371/journal.pone.0021800
+
+# author: Anton Kratz <anton.kratz@gmail.com>, RIKEN Omics Science Center, Functional Genomics Technology Team, Japan
+# created: Fri, Nov 02, 2012  7:25:52 PM
+# last change: Fri, Nov 09, 2012  3:20:01 PM
+
+# -----------------------------------------------------------------------------
+# If you don't have the treemap package installed, uncomment the following line:
+# install.packages( "treemap" );
+library(treemap) 								# treemap package by Martijn Tennekes
+
+# Set the working directory if necessary
+# setwd("C:/Users/username/workingdir");
+
+# --------------------------------------------------------------------------
+# Here is your data from REVIGO. Scroll down for plot configuration options.
+
+revigo.names <- c("term_ID","description","freqInDbPercent","uniqueness","dispensability","representative");
+revigo.data <- rbind(c("GO:0006811","ion transport",5.344,0.848,0.000,"ion transport"),
+c("GO:0046677","response to antibiotic",0.128,0.760,0.000,"response to antibiotic"),
+c("GO:0030420","establishment of competence for transformation",0.021,0.666,0.244,"response to antibiotic"),
+c("GO:0051289","protein homotetramerization",0.015,0.726,0.000,"protein homotetramerization"),
+c("GO:0006415","translational termination",0.201,0.533,0.573,"protein homotetramerization"),
+c("GO:0019746","hopanoid biosynthetic process",0.004,0.719,0.017,"hopanoid biosynthesis"),
+c("GO:0006096","glycolytic process",0.545,0.619,0.361,"hopanoid biosynthesis"),
+c("GO:0006108","malate metabolic process",0.088,0.709,0.110,"hopanoid biosynthesis"),
+c("GO:0018298","protein-chromophore linkage",0.095,0.713,0.035,"protein-chromophore linkage"),
+c("GO:0006355","regulation of transcription, DNA-templated",9.917,0.543,0.356,"protein-chromophore linkage"),
+c("GO:0006261","DNA-dependent DNA replication",0.576,0.629,0.116,"protein-chromophore linkage"));
+
+stuff <- data.frame(revigo.data);
+names(stuff) <- revigo.names;
+
+stuff$abslog10pvalue <- as.numeric( as.character(stuff$abslog10pvalue) );
+stuff$freqInDbPercent <- as.numeric( as.character(stuff$freqInDbPercent) );
+stuff$uniqueness <- as.numeric( as.character(stuff$uniqueness) );
+stuff$dispensability <- as.numeric( as.character(stuff$dispensability) );
+
+# by default, outputs to a PDF file
+pdf( file="revigo_treemap.pdf", width=16, height=9 ) # width and height are in inches
+
+# check the tmPlot command documentation for all possible parameters - there are a lot more
+tmPlot(
+	stuff,
+	index = c("representative","description"),
+	vSize = "abslog10pvalue",
+	type = "categorical",
+	vColor = "representative",
+	title = "REVIGO Gene Ontology treemap",
+	inflate.labels = FALSE,      # set this to TRUE for space-filling group labels - good for posters
+	lowerbound.cex.labels = 0,   # try to draw as many labels as possible (still, some small squares may not get a label)
+	bg.labels = "#CCCCCCAA",     # define background color of group labels
+												       # "#CCCCCC00" is fully transparent, "#CCCCCCAA" is semi-transparent grey, NA is opaque
+	position.legend = "none"
+)
+
+dev.off()
+>>>>>>> f8ceb9c9b282fa2eaaf32ae8b083b138ed74ea4d
 ```
 
 ```{r KaijuCounts, echo=FALSE}
@@ -28,6 +513,7 @@ library(reshape2)
 counts_unique_bacteria <- read_table2("/Volumes/GoogleDrive/My Drive/Lab/zygolife (1)/counts_unique_bacteria2.out", col_names = FALSE)
 
 counts_unique_bacteria$X3 <- str_sub(counts_unique_bacteria$X3, 23, -18)
+<<<<<<< HEAD
 head(counts_unique_bacteria$X1)
 over10k <- subset(counts_unique_bacteria, X1>10000)
 over10k <- subset(over10k, X2!="Stenotrophomonas" & X2!="Vibrio")
@@ -58,6 +544,19 @@ top20 <- top20[1:25,]
 
 pdf("Totalreads_per_bacteria.pdf", width = 50, height = 12)
 ggplot(top20, aes(reorder(Bacteria, -x), x), fill=top20$x) + theme(axis.text.x = element_text(angle = 90, vjust=.1, hjust=1)) + geom_bar(stat = "identity") + scale_fill_gradient(low="#113A73", high="#AF710B")
+=======
+
+pdf("Totalreads_per_fungi.pdf", width = 16, height = 8)
+ggplot(counts_unique_bacteria, aes(reorder(counts_unique_bacteria$X3, -counts_unique_bacteria$X1), counts_unique_bacteria$X1)) + theme(axis.text.x = element_text(angle = 90, vjust=.1, hjust=1)) + geom_bar(stat = "identity")
+dev.off()
+
+
+bacteriapergenome = dcast(counts_unique_bacteria, X3~X2)
+bacteriapergenome.m <- melt(bacteriapergenome)
+
+pdf("Totalreads_per_bacteria.pdf", width = 16, height = 18)
+ggplot(bacteriapergenome.m, aes(reorder(variable, -value), value)) + theme(axis.text.x = element_text(angle = 90, vjust=.1, hjust=1)) + geom_bar(stat = "identity")
+>>>>>>> f8ceb9c9b282fa2eaaf32ae8b083b138ed74ea4d
 dev.off()
 
 ```

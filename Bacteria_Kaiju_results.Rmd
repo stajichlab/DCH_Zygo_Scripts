@@ -1,0 +1,65 @@
+---
+title: "Bacterial Contigs in Fungal genome sequencing projects"
+output: html_notebook
+---
+
+```{r setup, include=FALSE, echo=FALSE, message=FALSE}
+require("knitr")
+opts_knit$set(root.dir = "/Volumes/GoogleDrive/My Drive/Lab/zygolife (1)/")
+#install.packages(c("ggplot2", "reshape2", "wesanderson", "tidyverse", "readxl", "VennDiagram", "vegan", "GGally", "network", "sna", "igraph"))
+```
+
+```{r colors}
+#Divergent:
+colors_10=c("#032047","#072C5F","#113A73","#1D4B8B","#385F95","#E3A948","#D48F1C","#AF710B","#915A00","#6B4300")
+
+colors_5blue=c("#032047","#072C5F","#113A73","#1D4B8B","#385F95")
+colors_5gold=c("#6B4300","#915A00","#AF710B","#D48F1C","#E3A948")
+colors_6div=c("#032047","#113A73","#385F95","#E3A948","#AF710B","#6B4300")
+colors_3blue=c("#385F95","#113A73","#032047")
+colors_3gold=c("#E3A948", "#AF710B", "#6B4300")
+```
+
+```{r KaijuCounts, echo=FALSE}
+library(readr)
+library(stringr)
+library(ggplot2)
+library(reshape2)
+counts_unique_bacteria <- read_table2("/Volumes/GoogleDrive/My Drive/Lab/zygolife (1)/counts_unique_bacteria2.out", col_names = FALSE)
+
+counts_unique_bacteria$X3 <- str_sub(counts_unique_bacteria$X3, 23, -18)
+head(counts_unique_bacteria$X1)
+over10k <- subset(counts_unique_bacteria, X1>10000)
+over10k <- subset(over10k, X2!="Stenotrophomonas" & X2!="Vibrio")
+
+1-(sum(over10k[,1])/sum(counts_unique_bacteria[,1]))
+
+pdf("Abundantbacteria_per_fungi.pdf", width = 8, height = 16)
+ggplot(over10k, aes(x=X3, y=X2, fill=X1)) + theme(axis.text.x = element_text(angle=90, vjust=.1, hjust=1)) + geom_tile()+ guides(fill=guide_legend(title="Number of Reads")) + xlab("Fungal Genome") + ylab("Reads") + scale_fill_gradient(high="#113A73", low="#AF710B")+ coord_flip() 
+dev.off()
+
+#fungal stats
+bacteriapergenome = dcast(over10k, X2~X3)
+head(over10k)
+over10k.m <- melt(over10k, id.vars = "X2")
+
+top20 <- bacteriaperfungi[with(bacteriaperfungi,order(-x)),]
+top20$x<-(top20$x/2)
+top20
+bacteriapergenome = dcast(counts_unique_bacteria, X3~X2)
+bacteriapergenome.m <- melt(bacteriapergenome)
+
+aggregate(over10k.m$value, list(Bacteria=over10k.m$X2), sum)
+over10k.m$value
+bacteriaHits
+top20 <- bacteriaHits[with(bacteriaHits,order(-x)),]
+top20
+top20 <- top20[1:25,]
+
+pdf("Totalreads_per_bacteria.pdf", width = 50, height = 12)
+ggplot(top20, aes(reorder(Bacteria, -x), x), fill=top20$x) + theme(axis.text.x = element_text(angle = 90, vjust=.1, hjust=1)) + geom_bar(stat = "identity") + scale_fill_gradient(low="#113A73", high="#AF710B")
+dev.off()
+
+```
+
+

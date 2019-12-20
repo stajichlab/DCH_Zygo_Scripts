@@ -15,4 +15,22 @@ Omar, here you can write about the
 # Results
 
 ```{r}
+#Load the package so that you can read an excel file into R
+library(readxl)
 
+#if you do not have the package uncomment the next line and install it. 
+#install.packages("readxl")
+
+PanID <- read_excel("/Volumes/GoogleDrive/My Drive/Lab/zygolife (1)/BFI-Metagenomics/R-microsporusPanID.EXCEL/R-microsporusPanID.xlsx", 
+    sheet = "Sheet2")
+
+library(reshape2)
+library(ggplot2)
+#install.packages(c("reshape2", "ggplot2"))
+PanID.m<-melt(PanID)
+PanID.m 
+PanID.overview<-subset(PanID.m, variable=="# Genes")
+PanID.overview
+ggplot(PanID.overview, aes(Genome, value, fill=value)) + geom_bar(stat="identity")+theme(axis.text.x = element_text(angle=90)) + ylab("Number of genes") + xlab("Bin from R. microsporus Genome")
+
+```

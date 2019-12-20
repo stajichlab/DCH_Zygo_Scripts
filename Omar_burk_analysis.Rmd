@@ -1,0 +1,18 @@
+---
+title: "R. microsporus and Burkholderia genomics"
+output: html_notebook
+---
+
+# Introduction
+
+
+# Methods:
+
+Omar, here you can write about the 
+
+## Bacteria contigs assembled using Kbase
+
+# Results
+
+```{r}
+

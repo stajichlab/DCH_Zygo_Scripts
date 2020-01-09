@@ -10,8 +10,12 @@
 
 module load kaiju
 
+echo "here"
+
 for i in Rmicrosporus_OMAR/genome/*.fa
 do
+	b=$(basename "$i" .fa)
+	echo $b
 	kaiju -v -t kaijudb/nodes.dmp -f kaijudb/nr/kaiju_db_nr.fmi -z 25 -a "greedy" -e 3 -s 200 -i $i -o kaiju_out/$i.ko
 done
 #kaiju -v -t kaijudb/nodes.dmp -f kaijudb/nr_euk/kaiju_db_nr_euk.fmi -z 10 -a "greedy" -e 3 -s 200 -i all.clean.gz -o kaiju_out/all.txt

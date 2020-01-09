@@ -16,7 +16,7 @@ module load kaiju/1.7.2
 mkdir kaijudb/
 cd kaijudb/
 
-kaiju-makedb -s nr_euk -t 10
+kaiju-makedb -s nr -t 20
 
 echo "done"
 

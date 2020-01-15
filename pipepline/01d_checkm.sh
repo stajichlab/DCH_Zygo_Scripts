@@ -31,7 +31,7 @@ if [ ! -f $INDIR/${BASE}/Maxbin_out/out.001.fasta ]; then
 elif [ ! -d $OUTPUT/${BASE} ]; then
 	echo "input $INDIR/$BASE/Maxbin_out"		
 	echo "save to $OUTPUT/${BASE}"
-	checkm lineage_wf -t 8 -x fasta $INDIR/$BASE/Maxbin_out ./$OUTPUT/${BASE}
+	checkm lineage_wf -t 8 -x fasta $INDIR/$BASE/Maxbin_out ./$OUTPUT
 else
     echo "skipping already started/run $BASE in $OUTDIR"
     exit

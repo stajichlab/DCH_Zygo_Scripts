@@ -1,4 +1,4 @@
-#!/usr/bin/bash
+#!/bin/bash -l
 #SBATCH --nodes 1 --ntasks 16 --mem 250G --out logs/metaSPAdes.%a.log --time 8:00:00 -p batch
 
 CPU=$SLURM_CPUS_ON_NODE
@@ -12,9 +12,9 @@ if [ ! $N ]; then
     fi
 fi
 hostname
-module load SPAdes/3.13.1
+conda activate SPAdes
 
-INDIR=Rmicrosporus_OMAR/raw_reads
+INDIR=input
 OUTPUT=metaSPAdes_out
 SAMPLEFILE=samples.dat
 
@@ -31,7 +31,7 @@ else
 	RevRead=$(sed -n ${O}p $SAMPLEFILE | cut -f1)
 	echo $ForRead
 	echo $RevRead
-	if [ ! -f $INDIR/${ForRead}]; then
+	if [ ! -f $INDIR/${ForRead} ]; then
         	echo "Cannot run as $INDIR/${ForRead} is missing"
         	exit
 	elif [ ! -d $OUTPUT/${ForRead}.metaSPAdes.out ]; then

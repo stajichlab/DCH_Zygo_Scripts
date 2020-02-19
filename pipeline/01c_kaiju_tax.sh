@@ -1,25 +1,26 @@
 #!/bin/bash -l
 
 #SBATCH --nodes=1
-#SBATCH --ntasks=2
-#SBATCH --cpus-per-task=1
-#SBATCH --mem-per-cpu=10G
-#SBATCH --time=05:15:00     # 1 day and 15 minutes
-#SBATCH --output=06_sort_tax
-#SBATCH -p batch
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=2
+#SBATCH --mem-per-cpu=200G
+#SBATCH --time=02:00:00     # 1 day and 15 minutes
+#SBATCH --output=logs/kaiju_tax.log
+#SBATCH -p short
 
 module load kaiju/1.7.2
 mkdir tax/
 
-for i in kaiju_out/*.fq.gz.kaiju.out.rename
+for i in kaiju_out/*.out
 do
-	b=$(basename "$i" .fq.gz.kaiju.out.rename)
+	b=$(basename "$i" .out)
 	echo $i
-	#echo $b
-	kaiju-addTaxonNames -u -r kingdom,genus -t kaijudb/nodes.dmp -n kaijudb/names.dmp -i $i -o tax/taxified_kaiju.$b.out
-	#kaiju2table -t kaijudb/nodes.dmp -n kaijudb/names.dmp -r genus -o summary_$b_.tsv tax/taxified_kaiju.$b.out
-	#kaiju2krona -t nodes.dmp -n names.dmp -i kaiju.out -o kaiju.out.krona
+	echo $b
+	kaiju-addTaxonNames -u -r kingdom,genus -t kaijudb/nodes.dmp -n kaijudb/names.dmp -i $i -o tax/$b.out
 done
 
-grep "C" tax/*.out >> all_tax.out
-
+#grep -i "^C" tax/*.out > all_tax.out
+kaiju2table -m 1 -t kaijudb/nodes.dmp -n kaijudb/names.dmp -r genus -o kaiju_table_summary.tsv tax/*.out
+sed -i -e "s/tax\///g" kaiju_table_summary.tsv 
+sed -i -e "s/\.out//g" kaiju_table_summary.tsv 
+sed -i -e "s/_/ /g" kaiju_table_summary.tsv 

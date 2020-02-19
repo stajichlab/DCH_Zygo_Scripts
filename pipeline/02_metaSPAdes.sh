@@ -1,5 +1,5 @@
 #!/bin/bash -l
-#SBATCH --nodes 1 --ntasks 16 --mem 250G --out logs/metaSPAdes.%a.log --time 24:00:00 -p batch
+#SBATCH --nodes 1 --ntasks 16 --mem 250G --out logs/metaSPAdes.%a.burk.log --time 24:00:00 -p batch
 
 CPU=$SLURM_CPUS_ON_NODE
 N=${SLURM_ARRAY_TASK_ID}
@@ -33,11 +33,13 @@ else
         echo "output is $OUTPUT/$b"
 	echo "Forward reads $ForRead"
 	echo "Reverse reads $RevRead"
+	spades.py --continue -o $OUTPUT/$b
+	echo "finished continue"
 	if [ ! -f $INDIR/${ForRead} ]; then
         	echo "Cannot run as $INDIR/${ForRead} is missing"
         	exit
 	elif [ ! -d $OUTPUT/$b ]; then
-		spades.py --meta -1 $INDIR/$ForRead -2 $INDIR/$RevRead -o $OUTPUT/$b
+		#spades.py --meta -1 $INDIR/$ForRead -2 $INDIR/$RevRead -o $OUTPUT/$b
 	else
     		echo "skipping already started/run $b in $OUTDIR"
     		exit

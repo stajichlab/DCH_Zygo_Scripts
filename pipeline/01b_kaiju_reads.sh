@@ -17,7 +17,7 @@ module load kaiju/1.7.2
 
 INDIR=input
 OUTPUT=kaiju_out
-SAMPLEFILE=fullmonty.dat
+SAMPLEFILE=raw_reads.dat
 
 mkdir -p $OUTPUT
 

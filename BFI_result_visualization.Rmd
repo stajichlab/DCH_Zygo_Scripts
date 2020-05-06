@@ -1,0 +1,492 @@
+---
+title: "Bacterial Contigs in Fungal genome sequencing projects"
+output: html_notebook
+---
+
+```{r setup, include=FALSE, echo=FALSE, message=FALSE}
+require("knitr")
+opts_knit$set(root.dir = "/Volumes/GoogleDrive/My Drive/Lab/zygolife (1)/DCH_Zygo_Scripts/")
+#install.packages(c("ggplot2", "reshape2", "wesanderson", "tidyverse", "readxl", "VennDiagram", "vegan", "GGally", "network", "sna", "igraph"))
+```
+
+```{r colors, include=FALSE}
+#Divergent:
+colors_11=c("#e5f5f9","#99d8c9", "#2ca25f", "#a6cee3", "#1f78b4","#fb9a99", "#e31a1c", "#fdbf6f", "#ff7f00", "#cab2d6", "#000000")
+
+#"#6a3d9a","#ffff99", "#b15928", 
+colors_10=c("#032047","#072C5F","#113A73","#1D4B8B","#385F95","#E3A948","#D48F1C","#AF710B","#915A00","#6B4300")
+
+colors_5blue=c("#032047","#072C5F","#113A73","#1D4B8B","#385F95")
+colors_5gold=c("#6B4300","#915A00","#AF710B","#D48F1C","#E3A948")
+colors_6div=c("#032047","#113A73","#385F95","#E3A948","#AF710B","#6B4300")
+colors_3blue=c("#385F95","#113A73","#032047")
+colors_3gold=c("#E3A948", "#AF710B", "#6B4300")
+```
+
+```{r, Kaiju_Screen, include=FALSE}
+#Percent Bacterial Reads from Fungal Genomes
+
+library("readxl")
+library("ggplot2")
+
+Contam.og <- read_excel("BFI_data.xlsx", sheet = "Kaiju_Ratios")
+Contam<-subset(Contam.og, Contam.og$Phylum=="Mucoromycota")
+Contam<-subset(Contam, Contam$`Percent total`<20)
+contam.plot<-ggplot(Contam, aes(reorder(Contam$Fungi, Contam$`Percent total`), Contam$`Percent total`, fill=Contam$`Bacteria Reads`)) + 
+  geom_bar(stat="identity") + 
+  theme_minimal() +
+  theme(axis.text.x = element_text( hjust = 1, vjust = .1), legend.position = "none") +
+  ylab("Percent Bacteria Reads") + 
+  xlab("Fungal Genome") +
+  ggtitle("Many Genomes Have Over 5% Bacterial Reads") + 
+  coord_flip()
+#contam.ag<-aggregate(`Percent total` ~ Genus, Contam, mean)
+
+contam.plot.GenusLevel<-ggplot(Contam, aes(reorder(Genus, `Percent total`), `Percent total`)) +
+  geom_boxplot(aes(fill=`Percent total`)) + 
+  theme_minimal() +
+  theme(axis.text.x = element_text( hjust = 1, vjust = .1), legend.position = "none") +
+  ylab("Percent Bacterial Reads") + 
+  xlab("Fungal Genus") +
+  ggtitle("Many Mucoromycete Genomes Have At Least 5% Bacterial Reads") + 
+  geom_hline(yintercept=5, linetype="dashed", color = "red", size=.2) +
+  coord_flip()
+
+pdf("Figures/Percent_Contam.pdf", width = 10, height = 75)
+contam.plot
+dev.off()
+
+
+pdf("Figures/Percent_Contam_GenusLevel.pdf", width = 6, height = 8)
+contam.plot.GenusLevel
+dev.off()
+
+```
+
+```{r, echo=FALSE}
+contam.plot
+contam.plot.GenusLevel
+```
+
+```{r, include=FALSE}
+
+#All Genuses 
+
+#Grab and shape data
+Burk_table <- read_excel("BFI_data.xlsx", sheet = "Kaiju_Burk_table")
+Burk_table.df<- data.frame(Burk_table)
+
+library(kableExtra)
+#webshot::install_phantomjs()
+table_bac <- Burk_table.df %>%
+  kable() %>%
+  kable_styling(bootstrap_options = c("striped", "hover"))%>%
+  save_kable("./Figures/BacteriaFungi-table.pdf")
+
+```
+
+```{r, burk_table}
+
+table_bac <- Burk_table.df %>%
+  kable() %>%
+  kable_styling(bootstrap_options = c("striped", "hover"))
+
+```
+
+
+```{r Kaiju_genus, include=FALSE}
+genus.og <- read_excel("BFI_data.xlsx", sheet = "Kaiju_Bac_Genus")
+
+genus.tmp<-genus.og[genus.og$Bacteria != "belong to a (non-viral) genus with less than 1% of all reads",]
+genus<-genus.tmp[genus.tmp$Bacteria != "cannot be assigned to a (non-viral) genus",]
+genus.tmp<-genus[genus$Bacteria != "Vibrio",]
+genus<-genus.tmp[genus.tmp$Bacteria != "unclassified",]
+genus.tmp<-genus[genus$Bacteria != "Clostridium",]
+genus<-genus.tmp[genus.tmp$Bacteria != "Clostridioides",]
+genus.tmp<-genus[genus$Bacteria != "Paraclostridium",]
+genus<-genus.tmp[genus.tmp$Bacteria != "Serratia",]
+genus.tmp<-genus[genus$Bacteria != "Xylella",]
+genus<-genus.tmp[genus.tmp$Bacteria != "Viruses",]
+genus.tmp<-genus[genus$Bacteria != "Stenotrophomonas",]
+genus<-genus.tmp[genus.tmp$Bacteria != "Chlamydia",]
+genus.tmp<-genus[genus$Bacteria != "Staphylococcus",]
+genus<-genus.tmp[genus.tmp$Bacteria != "Streptococcus",]
+genus.tmp<-genus[genus$Bacteria != "Acinetobacter",]
+genus<-genus.tmp[genus.tmp$Bacteria != "Alloscardovia",]
+
+
+genus.plot<- ggplot(genus, aes(x = Fungi, y=Bacteria)) + 
+  geom_tile(aes(fill=Percent)) + 
+  #theme_minimal() +
+  theme(axis.text.x = element_text(hjust = .9, vjust=.2)) + 
+  ylab("Bacteria Genus") + 
+  xlab(element_blank()) + 
+  theme(axis.text.x = element_text(angle=90, hjust=1, vjust=.1)) + 
+  coord_flip()
+
+pdf("./Figures/bac_genus.pdf", height = 75, width = 12)
+genus.plot
+dev.off()
+
+
+#Burkholderia
+burk<-subset(genus, genus$Bacteria=="Burkholderia" | genus$Bacteria=="Paraburkholderia" | genus$Bacteria=="Mycetohabitans")
+burk.plot<- ggplot(burk, aes(x = Fungi, y=Bacteria)) + 
+  geom_tile(aes(fill=Percent)) + 
+  theme(axis.text.x = element_text(hjust = .9, vjust=.2)) + 
+  ylab("Bacteria Genus") + 
+  xlab(element_blank()) + 
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle=90, hjust=1, vjust=.1)) 
+
+burk.plot
+
+pdf("./Figures/burkstrains.pdf")
+burk.plot
+dev.off()
+
+```
+
+
+```{r KaijuCounts, echo=FALSE}
+
+library(readr)
+library(stringr)
+library(ggplot2)
+library(reshape2)
+
+#Very large file, not uploaded to github, https://drive.google.com/open?id=1qLjxUoRAdmviA1sW3DA0oI-m9xcDVBTL&authuser=dcart001@ucr.edu&usp=drive_fs
+
+counts_unique_bacteria <- read_table2("Kaiju_counts_unique_bacteria.out", col_names = FALSE)
+
+counts_unique_bacteria$X3 <- str_sub(counts_unique_bacteria$X3, 23, -18)
+head(counts_unique_bacteria$X1)
+over10k <- subset(counts_unique_bacteria, X1>10000)
+over10k <- subset(over10k, X2!="Stenotrophomonas" & X2!="Vibrio")
+
+1-(sum(over10k[,1])/sum(counts_unique_bacteria[,1]))
+
+pdf("Figures/Abundantbacteria_per_fungi.pdf", width = 8, height = 16)
+ggplot(over10k, aes(x=X3, y=X2, fill=X1)) + 
+  geom_tile()+ 
+  guides(fill=guide_legend(title="Number of Reads")) + 
+  xlab("Fungal Genome") + ylab("Reads") + 
+  scale_fill_gradient(high="#113A73", low="#AF710B")+ 
+  theme(axis.text.x = element_text(angle=90, vjust=.1, hjust=1)) + 
+  coord_flip() 
+dev.off()
+#write_csv(over10k, "Data/over10k.csv")
+#write_csv(counts_unique_bacteria, "Data/counts_unique_bacteria.csv")
+#fungal stats
+
+```
+
+```{r autometa_results}
+library(readr)
+library(ggplot2)
+library(dplyr)
+
+#input file was generated by grepping "Burkholderiales" from autometa/taxonomy.tab output files
+Burkholderia_autometa_hits <- read_excel("BFI_data.xlsx", sheet = "autometa_Burk_hits", col_names = FALSE)
+
+Fungitmp<-gsub("taxonomy_unfilt/", "", Burkholderia_autometa_hits$...1)
+Fungi<-gsub("/.*", "", Fungitmp)
+
+Bacteria<-Burkholderia_autometa_hits$...10
+Size<-Burkholderia_autometa_hits$...2
+plot(density(Burkholderia$Size))
+mean(Burkholderia$Size)
+Burkholderia<-data.frame(Fungi,Bacteria,Size)
+#write.table(Burkholderia, "Data/Burk_classification.csv", sep = ",")
+Burkholderia<-read_csv("/Volumes/GoogleDrive/My Drive/Lab/zygolife_dch/BFI_data_vis/Data/Burk_classification.csv")
+Burkholderia.ag<-aggregate(Size ~ Classification+Fungi, Burkholderia, sum)
+Burkholderia.sub<-subset(Burkholderia.ag, Burkholderia.ag$Size>1000000)
+
+
+pdf("./Figures/autometa_bacVFun_heatmap.pdf", height =10, width = 20) 
+ggplot(Burkholderia, aes(Fungi, Bacteria, fill=Classification)) + 
+  geom_tile()+ 
+  theme(axis.text.x = element_text(angle = 90, hjust=1, vjust=.1)) + 
+  ggtitle("Aggregate Size of Bacterial Contigs") 
+
+ggplot(Burkholderia.sub, aes(Fungi, Size, fill=Classification)) + 
+  ggtitle("Aggregate Size of Bacterial Contigs") + 
+  geom_bar(stat="identity") +
+  scale_fill_manual(breaks = c("Burkholderiaceae", "Mycetohabitans", "Paraburkholderia", "Other"), values = c("Burkholderiaceae" = "#d8b365", "Mycetohabitans" = "#5ab4ac", "Paraburkholderia" = "#2166ac", "Other" = "#000000"))+
+  theme_minimal() + 
+  theme(axis.text.x = element_text(angle = 90, hjust=1, vjust=.1))
+
+dev.off()
+unique(Burk_subset$Bacteria)
+
+png("./Figures/autometa_bacVFun_heatmap.png", height =1000, width = 2000, res=120) 
+ggplot(Burkholderia, aes(Fungi, Size)) + theme(axis.text.x = element_text(angle = 90, hjust=1, vjust=.1)) + ggtitle("Size of Burkholderiaceae Contigs") + geom_bar(stat="identity") 
+dev.off()
+
+```
+
+```{r autometa_bins}
+
+library(readr)
+library(ggplot2)
+autometa_Burk_bins <- read_excel("BFI_data.xlsx", sheet = "autometa_Burk_bins")
+
+pdf("Figures/autometa_Burk_bins_completeness.pdf", width=8)
+ggplot(autometa_Burk_bins, aes(Completeness, `assembly_id`, size=Contamination, color=`Marker lineage`)) + 
+  geom_point(alpha=0.7) + 
+  theme_minimal() +
+  ylab("")
+dev.off()
+
+
+```
+
+```{r QUAST_Stats}
+library(reshape2)
+library(readxl)
+library(ggplot2)
+
+Quast_out <- read_excel("BFI_data.xlsx", sheet = "Assembly_stats")
+
+pdf("Figures/genome_stats.pdf")
+ggplot(Quast_out, aes(reorder(Host, `Largest Contig`),`Largest Contig`, fill=N50)) + geom_col() + coord_flip() + xlab("Host") + theme_minimal()
+dev.off()
+
+```
+
+```{r genomesize}
+
+library(reshape2)
+library(readxl)
+library(ggplot2)
+
+Orthofinder_out <- read_excel("BFI_data.xlsx", sheet = "Orthofinder_summary", range = "A1:AS2")
+
+gtotree_summary <- read_excel("BFI_data.xlsx", sheet = "gtotree_summary")
+
+Orthofinder_out<-reshape2::melt(Orthofinder_out)
+Orthofinder_out<-Orthofinder_out[,2:3]
+colnames(Orthofinder_out)<-c("assembly_id", "Gene Count")
+
+Ortho_gtotree<-merge(Orthofinder_out, gtotree_summary, by = "assembly_id", all.x = TRUE)
+Ortho_gtotree$perc_comp[is.na(Ortho_gtotree$perc_comp)] <- 100
+
+#Add Host name to each line
+#write.table(Ortho_gtotree, "Data/Ortho_gtotree.csv", sep = ",")
+gtotree_summary <- read.csv("Data/Ortho_gtotree.csv")
+
+pdf("Figures/completeness_plot_bubble.pdf")
+ggplot(gtotree_summary, aes(perc_comp, `Gene.Count`, fill=Host)) +
+  geom_point(aes(color=Host)) +
+  xlab("Genome Percent Completeness") +
+  ylab("Number of Genes")+
+  theme_minimal()
+dev.off()
+
+pdf("Figures/completeness_plot_bar.pdf")
+ggplot(Ortho_gtotree, aes(reorder(assembly_id, -`Gene Count`), `Gene Count`, fill=perc_comp)) +
+  geom_col() + 
+  theme_minimal() + 
+  coord_flip() +
+  xlab("") +
+  scale_fill_continuous(low="darkred", high="blue", guide="colorbar",na.value="blue")+ 
+  labs(fill='Percent Completeness') +
+  geom_hline(yintercept=3000, linetype="dashed", color = "black", size=.5)+ 
+  theme_minimal()
+dev.off()
+
+
+```
+
+```{r upsetPlot}
+
+library(readxl)
+library(gplots)
+library(ggplot2)
+library(reshape2)
+library(data.table)
+
+Orthogroups <- read_excel("BFI_data.xlsx", sheet = "Orthogroups.GeneCount")
+Orthogroups.nm <- data.matrix(Orthogroups[,2:(ncol(Orthogroups))])
+rownames(Orthogroups.nm)<-Orthogroups$Orthogroup
+#heatmap.2(Orthogroups.nm[1:1000,], density.info = "none", trace = "none", margins = c(19,2), dendrogram = "col")
+
+row.order <- hclust(dist(Orthogroups.nm))$order # clustering
+col.order <- hclust(dist(t(Orthogroups.nm)))$order
+ortho_new <- Orthogroups.nm[row.order, col.order]
+ortho_new.df<-data.frame(ortho_new)
+ortho_new.df$Orthogroup<-rownames(ortho_new)
+write.csv2(t(ortho_new.df), "Data/sorted_orthos.csv")
+
+orthogroups.m<-reshape2::melt(ortho_new.df, id.vars = "Orthogroup")
+
+pdf("Figures/ortho_heat.pdf", width = 12, height = 12)
+ggplot(orthogroups.m, aes(Orthogroup, variable, fill=value)) + 
+  geom_tile()+ 
+  scale_fill_distiller(palette = "RdYlBu", trans = "log10") +
+  theme(axis.text.y = element_blank())+
+  coord_flip()+
+  theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust=.1))+
+  xlab("")
+dev.off()
+
+
+results<-NULL
+plist<-NULL
+means_burk<-NULL
+means_fungal<-NULL
+for (f in 1:nrow(ortho_new.df)){
+  tryCatch({
+    results[[f]]<-t.test(ortho_new.df[f,c(2:11,39:46)], ortho_new.df[f,13:30])
+    plist[[f]] <-results[[f]]$p.value
+    means_burk[[f]] <-mean(as.numeric(ortho_new.df[f,c(2:11,39:46)]))
+    means_fungal[[f]] <-mean(as.numeric(ortho_new.df[f,13:30]))
+  }, error = function(e){})
+}
+
+ortholist<-ortho_new.df$Orthogroup
+pvalue.df<-as.data.frame(cbind(ortholist, plist, means_burk, means_fungal), stringsAsFactors = FALSE)
+pvalue.sorted.df<- pvalue.df[order(pvalue.df$plist),]
+pvalue.sorted.df$plist<-as.numeric(pvalue.sorted.df$plist)
+pvalue.sorted.df.subset<-subset(pvalue.sorted.df, pvalue.sorted.df$plist<.000001)
+Burk_v_env_orthos<-pvalue.sorted.df.subset[,c(1,3,4)]
+Burk_v_env_orthos.m<-reshape2::melt(Burk_v_env_orthos, id.vars="ortholist")
+Burk_v_env_orthos.m$value<-scale(as.numeric(Burk_v_env_orthos.m$value))
+sort(Burk_v_env_orthos$ortholist ~ Burk_v_env_orthos$means_burk)
+pdf("Figures/orthogroup_compare.pdf", height = 70)
+ggplot(Burk_v_env_orthos.m, aes(variable, ortholist, fill=as.numeric(value)))+
+  geom_tile()+
+  scale_fill_gradient(low="gold", high = "blue")
+dev.off()
+
+```
+
+
+```{r eggnog-mapper}
+
+library(dplyr)
+library(readxl)
+library(ggplot2)
+library(reshape2)
+library(scales)
+
+OG_GOannotations <- read_excel("BFI_data.xlsx", sheet = "Ortho_GO")
+Gain_annotations <- read_excel("BFI_data.xlsx", sheet = "eggnog-mapper_Gained")
+Loss_annotations <- read_excel("BFI_data.xlsx", sheet = "eggnog-mapper_Lost")
+Gain.table<-count(Gain_annotations, `eggNOG annot`)
+Gain.table<-subset(Gain.table, Gain.table$n>20)
+Gain.table<-subset(Gain.table, Gain.table$`eggNOG annot`!="NA")
+write.table(Gain.table, "Data/Gene_table_Gain.csv", sep = ",", row.names = FALSE)
+Loss.table<-count(Loss_annotations, `eggNOG annot`)
+Loss.table<-subset(Loss.table, Loss.table$n>40)
+Loss.table<-subset(Loss.table, Loss.table$`eggNOG annot`!="NA")
+write.table(Loss.table, "Data/Gene_table_Loss.csv", sep = ",", row.names = FALSE)
+
+OG.gain.table<-count(OG_GOannotations, Gained)
+nrow(OG.gain.table)
+colnames(OG.gain.table)<-c("GO_terms", "count")
+OG.gain.table<-subset(OG.gain.table, count>20)
+OG.gain.table<-subset(OG.gain.table,  GO_terms!="NA")
+#nrow(OG.gain.table)
+#write.table(OG.gain.table, "Data/OG.annot.gain.csv", sep = ",", row.names = FALSE)
+ggplot(OG.gain.table, aes(reorder(GO_terms, count), count)) + 
+  geom_bar(stat="identity") +
+  coord_flip() +
+  ggtitle("Gained")
+
+
+OG.lose.table<-count(OG_GOannotations, Lost)
+colnames(OG.lose.table)<-c("GO_terms", "count")
+OG.lose.table<-subset(OG.lose.table, count>200)
+#nrow(OG.lose.table)
+#write.table(OG.lose.table, "Data/OG.annot.lose.csv", sep = ",", row.names = FALSE)
+ggplot(OG.lose.table, aes(reorder(GO_terms, count), count)) + 
+  geom_bar(stat="identity") +
+  coord_flip() +
+  ggtitle("Lost")
+
+
+OG<-merge(OG.lose.table, OG.gain.table, by = "GO_terms")
+OG.dm<-data.matrix(OG[,2:3])
+rownames(OG.dm)<-OG$GO_terms
+colnames(OG.dm)<-c("Lost", "Gained")
+OG.dm.scaled<-scale(OG.dm)
+OG.dm.scaled<-data.frame(OG.dm.scaled)
+OG.dm.scaled$GO_terms<-rownames(OG.dm)
+OG.m<-melt(OG.dm.scaled, id.vars = "GO_terms")
+ggplot(OG.m, aes(reorder(GO_terms, value), variable, fill=value)) +
+  geom_tile() +
+  coord_flip()
+
+pdf("Figures/eggnog_summary.pdf", height = 30, width = 30)
+ggplot(Gain.table, aes(reorder(`eggNOG annot`, n),n)) + 
+  geom_bar(stat="identity") +
+  coord_flip()+
+  ggtitle("Gain")
+
+ggplot(Loss.table, aes(reorder(`eggNOG annot`, n), n)) + 
+  geom_bar(stat="identity") +
+  coord_flip() +
+  ggtitle("Loss")
+dev.off()
+
+Gain_annotations <- read_excel("BFI_data.xlsx", sheet = "eggnog-mapper_Gained")
+
+```
+
+```{r}
+
+#for differences between r. microsporus clades
+colnames(ortho_new.df)
+rmicro<-ortho_new.df[,c(14,15,26:30, 16:25)]
+
+results<-NULL
+plist<-NULL
+means_mcyeto<-NULL
+means_para<-NULL
+for (f in 1:nrow(rmicro)){
+  tryCatch({
+    results[[f]]<-t.test(rmicro[f,c(1:7)], rmicro[f,8:17])
+    plist[[f]] <-results[[f]]$p.value
+    means_mcyeto[[f]] <-mean(as.numeric(rmicro[f,c(1:7)]))
+    means_para[[f]] <-mean(as.numeric(rmicro[f,8:17]))
+  }, error = function(e){})
+}
+
+ortholist<-rownames(rmicro)
+pvalue.df<-as.data.frame(cbind(ortholist, plist, means_mcyeto, means_para), stringsAsFactors = FALSE)
+pvalue.sorted.df<- pvalue.df[order(pvalue.df$plist),]
+pvalue.sorted.df$plist<-as.numeric(pvalue.sorted.df$plist)
+pvalue.sorted.df.subset<-subset(pvalue.sorted.df, pvalue.sorted.df$plist<.001)
+nrow(pvalue.sorted.df.subset)
+write.table(pvalue.sorted.df.subset, "Data/MycetoVPara.csv", sep = " ", row.names = FALSE)
+getwd()
+subset(pvalue.sorted.df.subset, means_para==0)
+
+ortho_myceto.m<-reshape2::melt(pvalue.sorted.df.subset[,c(1,3:4)], id.vars="ortholist")
+ggplot(ortho_myceto.m, aes(ortholist, variable, fill=as.numeric(value))) +
+  geom_tile()+
+  theme(axis.text.x = element_text(angle = 90, hjust = .1, vjust =.1))
+
+```
+
+```{r biocic_results}
+library(dplyr)
+library(readxl)
+library(ggplot2)
+library(reshape2)
+library(scales)
+
+biocic <- read_excel("BFI_data.xlsx", sheet = "biocic")
+biocic<-data.frame(biocic[,1:8])
+sd<-apply(biocic[,2:7], 1, FUN=sd)
+mean<-apply(biocic[,2:7], 1, FUN=mean)
+biocic$sd<-sd
+biocic$mean<-mean
+dif<-(biocic$P..rhizoxinica.HKI.454<(biocic$mean-biocic$sd))
+more<-(biocic$P..rhizoxinica.HKI.454>(biocic$mean+biocic$sd))
+
+biocic$Organism[dif]
+biocic$Organism[more]
+```
+

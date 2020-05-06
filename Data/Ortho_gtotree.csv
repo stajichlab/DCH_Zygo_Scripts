@@ -1,0 +1,45 @@
+assembly_id,Gene Count,perc_comp,Host
+Mycetohabitans endofungorum Apophysomyces_sp._BC105,2684,85.22,Apophysomyces
+Burkholderia_dabaoshanensis_UP000235616,6323,100,None
+Burkholderia_gladioli_UP000008316,7351,100,None
+Burkholderia_glumae_UP000002187,5660,100,None
+Burkholderia_multivorans_UP000008815,6040,100,None
+Burkholderia_pseudomallei_UP000000605,5717,100,None
+Burkholderia_sp._Bp8963_UP000274808,7093,100,None
+Burkholderia_sp._GAS332_UP000184700,9042,100,None
+Burkholderia_sp._JS23_UP000243719,4543,100,None
+Burkholderia_sp._Leaf177_UP000051826,5955,100,None
+Burkholderia_sp._OLGA172_UP000076852,7096,100,None
+Burkholderia_sp._SRS-W-2-2016_UP000186182,6582,100,None
+Burkholderia_sp._TNe-862_UP000198908,6389,100,None
+Burkholderia_sp._TSV86_UP000066043,4805,100,None
+Burkholderia_sp._UP000001550,5983,100,None
+Burkholderia_sp._WAC0059_UP000243676,4564,100,None
+Burkholderia_sp._lig30_UP000027020,4988,100,None
+Candidatus_Burkholderia_pumila_UP000242951,1736,100,None
+Candidatus_Burkholderia_verschuerenii_UP000036959,4492,100,None
+Mycetohabitans endofungorum Circinella_simplex_CBS_142.35,5310,100,Circinella
+Mycetohabitans endofungorum Mortierella_clonocystis_AM1000,2170,87.19,Mortierella
+Mycetohabitans endofungorum Mortierella_epicladia_AD058,2228,90.64,Mortierella
+Mycetohabitans endofungorum Mortierella_gamsii_AD045,2038,90.15,Mortierella
+Mycetohabitans endofungorum Mortierella_gamsii_NVP60,2086,90.15,Mortierella
+Mycetohabitans endofungorum Mortierella_verticillata_TTC192,1882,90.15,Mortierella
+Mycetohabitans_endofungorum_HKI456,2678,99.01,Rhizopus
+Paraburkholderia_rhizoxinica_HKI_454,2844,100,Rhizopus
+Mycetohabitans endofungorum Rhizopus_americanus_NRRL_66675,3125,82.76,Rhizopus
+Mycetohabitans endofungorum Rhizopus_arrhizus_NRRL_2582,3213,97.04,Rhizopus
+Mycetohabitans endofungorum Rhizopus_arrhizus_NRRL_66564,3136,95.07,Rhizopus
+Mycetohabitans endofungorum Rhizopus_arrhizus_NRRL_A-11376,4717,100,Rhizopus
+Mycetohabitans endofungorum Rhizopus_microsporus_NRRL_13129,3116,98.52,Rhizopus
+Mycetohabitans endofungorum Rhizopus_microsporus_NRRL_5546,3121,96.06,Rhizopus
+Mycetohabitans endofungorum Rhizopus_microsporus_NRRL_5547,3195,98.03,Rhizopus
+Mycetohabitans endofungorum Rhizopus_microsporus_NRRL_5548,3313,97.54,Rhizopus
+Mycetohabitans endofungorum Rhizopus_microsporus_NRRL_5550,3157,96.06,Rhizopus
+Mycetohabitans endofungorum Rhizopus_microsporus_NRRL_5551,3399,98.52,Rhizopus
+Mycetohabitans endofungorum Rhizopus_microsporus_NRRL_5552,3215,98.52,Rhizopus
+Mycetohabitans endofungorum Rhizopus_microsporus_NRRL_5553,3195,98.52,Rhizopus
+Mycetohabitans endofungorum Rhizopus_microsporus_NRRL_5554,3246,98.52,Rhizopus
+Mycetohabitans endofungorum Rhizopus_microsporus_NRRL_5558,3326,99.01,Rhizopus
+Mycetohabitans endofungorum Rhizopus_oryzae_NRRL_62023,3277,97.04,Rhizopus
+Mycetohabitans endofungorum Rhizopus_sp._NRRL_2934,3273,97.54,Rhizopus
+Mycetohabitans endofungorum Thamnostylum_repens_Tieghem_Upadhyay_NRRL_6240,7532,99.01,Thamnostylum

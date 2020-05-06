@@ -1,5 +1,5 @@
 #!/bin/bash -l
-#SBATCH -N 1 -n 8 --mem=16G --out logs/prokka.%a.log --time=2:00:00 -p short
+#SBATCH -N 1 -n 8 --mem=16G --out logs/prokka_OV.%a.log --time=2:00:00 -p short
 
 N=${SLURM_ARRAY_TASK_ID}
 echo "$N"
@@ -34,8 +34,10 @@ OUTDIR=$(realpath prokka)
 #name=$(sed -n ${N}p $SAMPFILE | cut -f1)
 #species=$(echo "$Species" | cut -f2)
 
-file=$(ls autometa_bins/burkholderia/*.bac.fasta | sed -n ${N}p)
-b=$(basename $file .fasta)
+#file=$(ls autometa_bins/burkholderia/*.bac.fasta | sed -n ${N}p)
+#b=$(basename $file .fasta)
+file=$(ls gtoTree/ncbi-genomes-2020-02-13/*.fna | sed -n ${N}p)
+b=$(basename $file .fna)
 tempfile=/scratch/prokka_$b.$$
 perl -p -e 's/>(NODE_\d+)_/>$1 /' $file > /scratch/prokka_$b.$$
 prokka $tempfile --centre UCR --addgenes --metagenome --cpus $CPU  --force --outdir $OUTDIR/$b 

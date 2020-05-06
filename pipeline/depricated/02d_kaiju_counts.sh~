@@ -1,0 +1,9 @@
+#!/bin/bash -l
+
+for i in kaiju_out/*fq.gz.ko
+do
+	b=$(basename "$i" .fq.gz.ko)
+	grep -c -i "^C" $i > kaiju_out/$b_classified_counts.txt
+	grep -c -i "^U" $i > kaiju_out/$b_unclassified_counts.txt
+
+done
